@@ -1,0 +1,228 @@
+\section{ANYmal}
+
+\begin{whitebox}{\textbf{LOCOMOTION CONTROL PIPELINE}}
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+    \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+    
+    \scalebox{0.58}{
+    \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+        % nodes
+        \node[block, align=center, font=\small] (nav)
+        {\textbf{Navigation}\\
+        (\qtyrange{1}{10}{\hertz})};
+        \node[block, align=left, right of=nav, font=\small, node distance=3.0cm, text width=2.0cm] (plan)
+            {{\centering\textbf{Planning}\\
+            (\qtyrange{10}{100}{\hertz})\par}
+            - motion\\
+            - foothold\\
+            - torque};
+        \node[block, align=left, right of=plan, font=\small, node distance=3.5cm, text width=3.0cm] (track)
+            {{\centering\textbf{Tracking}\\
+            (\unit{\kilo\hertz})\par}
+            - follow plan\\
+            - satisfy constraints\\
+            - reactive behaviour};
+        \node[block, align=left, right of=track, font=\small, node distance=4.0cm, text width=2.5cm] (control)
+            {{\centering\textbf{Control}\par}
+            - joint torque\\
+            - joint position};
+        \node[block, align=center, right of=control, font=\small, node distance=3.2cm, text width=1.5cm] (plant)
+            {\textbf{Robot}};
+        \node[block, align=left, below of=control, font=\small, node distance=2.0cm, text width=2.8cm] (proprio)
+            {{\centering\textbf{Proprioception}\par}
+            - joint position\\
+            - IMU\\
+            - contacts};
+        \node[block, align=left, below of=proprio, font=\small, node distance=2.0cm, text width=2.5cm] (extero)
+            {{\centering\textbf{Exteroception}\par}
+            - camera\\
+            - LiDAR};
+        \node[block, align=center, below of=track, font=\small, node distance=2.0cm, text width=2.0cm] (estim)
+            {\textbf{State\\ Estimation}\\
+            (\unit{\kilo\hertz})};
+        \node[block, align=center, below of=plan, font=\small, node distance=2.0cm, text width=2.5cm] (loc)
+            {\textbf{Localization\\\& Mapping}};
+        % arrows
+        \draw[->] (nav) -- node {} (plan);
+        \draw[->] (plan) -- node {} (track);
+        \draw[->] (track) -- node {} (control);
+        \draw[->] (control) -- node {} (plant);
+        \draw[->] (plant) |- (proprio);
+        \draw[->] (plant) |- (extero);
+        \draw[->] (proprio) -- (estim);
+        \draw[->] (estim) -- (loc);
+        \draw[->] (estim) -- (track);
+        \draw[->] (loc) -- (plan);
+        \draw[->] (extero) -| (loc);
+        \draw[->] (extero) -| (estim);
+        \draw[->] (loc) -| (nav);
+    \end{tikzpicture}}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FLOATING BASE MODEL}}
+    \begin{align*}
+        \bm{M}(\bm{q})\dot{\bm{u}}+\bm{h}(\bm{q,u})=\bm{S}^\top\bm{\tau}+\bm{J}_S^\top\bm{\lambda}
+    \end{align*}
+    \begin{itemize}
+        \item Support/contact Jacobian $\bm{J}_S$ consists of $n_c$ stacked (geometric) end-effector Jacobians $\bm{J}_{0,E_{n_c}}$
+        \begin{align*}
+            \bm{J}_S=
+            \begin{bmatrix}
+                _\mathcal{I}\bm{J}_{0,E_1}\\
+                \vdots\\
+                _\mathcal{I}\bm{J}_{0,E_{n_c}}
+            \end{bmatrix}
+        \end{align*}
+        where
+        \begin{align*}
+            _\mathcal{I}\bm{J}_{0,E_k}=
+            \begin{bmatrix}
+                \mathbb{I} & -\bm{C}_\mathcal{IB}
+                \begin{bmatrix}
+                    _\mathcal{B}\bm{r}_{BE_k}
+                \end{bmatrix}_\times & \bm{0} & \hdots & _\mathcal{I}\bm{J}_{0,BE_k} & \hdots & \bm{0}
+            \end{bmatrix}
+        \end{align*}
+        where $_\mathcal{I}\bm{J}_{0,BE_k}$ is the relative (geometric) Jacobian from the base $B$ to end effector $E_k$
+        \item Stacked external (ground contact) forces
+        \begin{align*}
+            \bm{\lambda}=
+            \begin{bmatrix}
+                \bm{\lambda}_1\\
+                \vdots\\
+                \bm{\lambda}_{n_c}
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{WHOLE BODY CONTROL IDEA}}
+    \begin{enumerate}
+        \item Separate the EoM into base and joint dynamics
+        \begin{align*}
+            \begin{bmatrix}
+                \color{red}\bm{M}_b\\
+                \bm{M}_j
+            \end{bmatrix}\dot{\bm{u}}+
+            \begin{bmatrix}
+                \color{red}\bm{h}_b\\
+                \bm{h}_j
+            \end{bmatrix}=
+            \begin{bmatrix}
+                \color{red}\bm{0}\\
+                \bm{\tau}
+            \end{bmatrix}+
+            \begin{bmatrix}
+                \color{red}\bm{J}_{S_b}^\top\\
+                \bm{J}_{S_j}^\top
+            \end{bmatrix}\bm{\lambda}
+        \end{align*}
+        \item Define a vector of quantities used for control
+        \begin{align*}
+            \bm{\xi}=
+            \begin{bmatrix}
+                \dot{\bm{u}}\\
+                \bm{\lambda}
+            \end{bmatrix}
+        \end{align*}
+        Note: $\bm{\tau}$ follows directly from this
+        \item Break down locomotion problem into simpler tasks of the form
+        \begin{align*}
+            \bm{T}_p=
+            \begin{cases}
+                \bm{W}_{\mathrm{eq},p}(\bm{A}_p\bm{\xi}-\bm{b}_p)=\bm{0}\\
+                \bm{W}_{\mathrm{ineq},p}(\bm{D}_p\bm{\xi}-\bm{f}_p)\leq\bm{0}
+            \end{cases}
+        \end{align*}
+        where the $\bm{W}$ are weighting factors
+        \item Solve the tasks hierarchically i.e. project the constraints into the nullspace of higher priority tasks
+        \item Given $\dot{\bm{u}}^*,\bm{\tau}^*$ from the optimization, obtain $\bm{\tau}_\mathrm{des}$ from the joint part of the EoM
+        \begin{align*}
+            \bm{\tau}_\mathrm{des}=\bm{M}_j(\bm{q})\dot{\bm{u}}^*+\bm{h}_j(\bm{q,u})-\bm{J}_{S_j}^\top\bm{\lambda}^*
+        \end{align*}
+        \item Use $\bm{\tau}_\mathrm{des}$ as a feedforward term
+        \begin{align*}
+            \bm{\tau}^*=\bm{\tau}_\mathrm{des}+\bm{k}_p\tilde{\bm{q}}+\bm{k}_d\dot{\tilde{\bm{q}}}
+        \end{align*}
+    \end{enumerate}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{WHOLE BODY CONTROL TASKS}}
+    \begin{center}
+        \begin{tabularx}{\columnwidth}{>{\RaggedRight}m{4.2cm}>{\RaggedRight}m{5.5cm}}
+            \small
+            Base equations of motion & 
+            $\begin{aligned}
+                \begin{bmatrix}
+                    \bm{M}_b & -\bm{J}_{S_b}^\top
+                \end{bmatrix}\bm{\xi}=-\bm{h}
+            \end{aligned}$\\
+            \addlinespace[5pt]
+            \small
+            Force limits & 
+            $\begin{aligned}
+                \left(_\mathcal{I}\bm{h}-\ _\mathcal{I}\bm{n}\mu\right)^\top\ _\mathcal{I}\bm{\lambda}_k\leq\bm{0}\\
+                -\left(_\mathcal{I}\bm{h}+\ _\mathcal{I}\bm{n}\mu\right)^\top\ _\mathcal{I}\bm{\lambda}_k\leq\bm{0}\\
+                \left(_\mathcal{I}\bm{l}-\ _\mathcal{I}\bm{n}\mu\right)^\top\ _\mathcal{I}\bm{\lambda}_k\leq\bm{0}\\
+                -\left(_\mathcal{I}\bm{l}+\ _\mathcal{I}\bm{n}\mu\right)^\top\ _\mathcal{I}\bm{\lambda}_k\leq\bm{0}\\
+            \end{aligned}$\\
+            \addlinespace[5pt]
+            \small
+            Torque limits & 
+            $\begin{aligned}
+                \bm{\tau}_{\min}\leq\bm{\tau}\leq\bm{\tau}_{\max}
+            \end{aligned}$\\
+            \addlinespace[5pt]
+            \small
+            No motion at contact points &
+            $\begin{aligned}
+                \begin{bmatrix}
+                    \bm{J}_S & \bm{0}
+                \end{bmatrix}\bm{\xi}=-\dot{\bm{J}}_S\bm{u}
+            \end{aligned}$\\
+            \addlinespace[5pt]
+            \small
+            CoM motion tracking &
+            $\begin{aligned}
+                &\ddot{\bm{r}}_B^*=\ddot{\bm{r}}_{B,\mathrm{des}}+\bm{k}_p\Delta\bm{r}_B+\bm{k}_d\Delta\dot{\bm{r}}_B\\
+                &\begin{bmatrix}
+                    \bm{J}_{0,B} & \bm{0}
+                \end{bmatrix}\bm{\xi}=\ddot{\bm{r}}_B^*-\dot{\bm{J}}_{0,B}\bm{u}
+            \end{aligned}$\\
+            \addlinespace[5pt]
+            \small
+            Torso angular motion tracking\\
+            \addlinespace[5pt]
+            \small
+            Foot motion tracking\\
+            \addlinespace[5pt]
+            \small
+            End-effector motion tracking\\
+            \addlinespace[5pt]
+            \small
+            End-effector force tracking &
+            $\begin{aligned}
+                \begin{bmatrix}
+                    \bm{0} & \mathbb{I}
+                \end{bmatrix}\bm{\xi}=
+                \begin{bmatrix}
+                    \bm{0} & \hdots & \bm{\lambda}^*
+                \end{bmatrix}^\top
+            \end{aligned}$\\
+            \addlinespace[5pt]
+            \small
+            Torso orientation adaptation (depending on arm config)\\
+            \addlinespace[5pt]
+            \small
+            Contact force minimization & 
+            $\begin{aligned}
+                \begin{bmatrix}
+                    \bm{0} & \mathbb{I}
+                \end{bmatrix}\bm{\xi}=\bm{0}
+            \end{aligned}$
+        \end{tabularx}
+    \end{center}
+    \faWarning\ Tasks in descending priority order
+\end{whitebox}

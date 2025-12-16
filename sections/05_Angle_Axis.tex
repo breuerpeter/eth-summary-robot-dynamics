@@ -1,0 +1,63 @@
+\section{ANGLE AXIS}
+
+\begin{whitebox}{\textbf{PROPERTIES}}
+    \begin{itemize}
+        \item 4 parameters
+        \begin{itemize}
+            \item Rotation angle $\theta\in\mathbb{R}$
+            \item Rotation axis $\bm{n}\in\mathbb{R}^3$
+            \begin{align*}
+                \bm{\chi}_{R,\mathrm{AngleAxis}}=
+                \begin{bmatrix}
+                    \theta\\
+                    \bm{n}
+                \end{bmatrix}
+            \end{align*}
+        \end{itemize}
+        \item Unitary constraint: $||\bm{n}||=1$
+        \item Singularity problem (at $\theta=0$)
+        \item Convertible to rotation/Euler vector (3 parameters)
+        \begin{align*}
+            \bm{\chi}_{R,\mathrm{RotVec}}=\theta\bm{n}
+        \end{align*}
+        \begin{itemize}
+            \item In general, rotational vectors are not proper vectors
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+\begin{whitebox}{\textbf{CONVERSIONS}}
+    \begin{itemize}
+        \item Angle axis $\to$ rotation matrix
+        \resizebox{0.95\textwidth}{!}{$
+            \begin{aligned}
+                \bm{C}_\mathcal{AB}(\theta,\bm{n})&=\cos(\theta)\mathbb{I}_{3\times3}-\sin(\theta)
+                \begin{bmatrix}
+                    \bm{n}
+                \end{bmatrix}_\times+(1-\cos(\theta))\bm{n}\bm{n}^\top\\
+                &=
+                \begin{bmatrix}
+                    n_x^2(1-c_\theta)+c_\theta & n_xn_y(1-c_\theta)-n_zs_\theta & n_xn_z(1-c_\theta)+n_ys_\theta\\
+                    n_xn_y(1-c_\theta)+n_zs_\theta & n_y^2(1-c_\theta)+c_\theta & n_yn_z(1-c_\theta)-n_xs_\theta\\
+                    n_xn_z(1-c_\theta)-n_ys_\theta & n_yn_z(1-c_\theta)+n_xs_\theta & n_z^2(1-c_\theta)+c_\theta
+                \end{bmatrix}
+            \end{aligned}$}
+    
+        \item Rotation matrix $\to$ angle axis
+        \begin{align*}
+            \bm{\chi}_{R,\mathrm{AngleAxis}}=
+            \begin{bmatrix}
+                \theta\\
+                \bm{n}
+            \end{bmatrix}=
+            \begin{bmatrix}
+                \arccos\left(\frac{c_{11}+c_{22}+c_{33}-1}{2}\right)\\
+                \bm{n}=\frac{1}{2\sin\theta}
+                \begin{bmatrix}
+                    c_{32}-c_{23}\\
+                    c_{13}-c_{31}\\
+                    c_{21}-c_{12}
+                \end{bmatrix}
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}

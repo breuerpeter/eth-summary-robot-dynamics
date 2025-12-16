@@ -1,0 +1,375 @@
+\section{FLOATING BASE DYNAMICS}
+
+\begin{whitebox}{\textbf{FLOATING BASE KINEMATICS}}
+    \begin{itemize}
+        \item Unactuated base in point $B$ (can only move through contacts with environment) denoted with index $b$
+        \item Generalized coordinates
+        \begin{align*}
+            &\bm{q}=
+            \begin{bmatrix}
+                \bm{q}_b\\
+                \bm{q}_j
+            \end{bmatrix}
+        \end{align*}
+        where
+        \begin{align*}
+            &\bm{q}_b=
+            \begin{bmatrix}
+                \bm{q}_{b_P}=\ _\mathcal{I}\bm{r}_{IB}\\
+                \bm{q}_{b_R}=\bm{\mathcal{X}}_{R,b}
+            \end{bmatrix}\in\mathbb{R}^3\times\mathrm{SO}(3)
+        \end{align*}
+        \begin{itemize}
+            \item Base orientation $\bm{q}_{b_R}$ can be parameterized using any rotation representation $\bm{\mathcal{X}}_{R,b}$
+            \item At least $n_{b0}=6$ base generalized coordinates in 3D
+        \end{itemize}
+        \item Generalized velocities and accelerations
+        \begin{itemize}
+            \item Common choice
+            \begin{align*}
+                \bm{u}=
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{v}_B\\
+                    _\mathcal{B}\bm{\omega}_{IB}\\
+                    \dot{\varphi}_1\\
+                    \vdots\\
+                    \dot{\varphi}_{n_j}
+                \end{bmatrix},\ 
+                \dot{\bm{u}}=
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{a}_B\\
+                    _\mathcal{B}\bm{\psi}_{IB}\\
+                    \ddot{\varphi}_1\\
+                    \vdots\\
+                    \ddot{\varphi}_{n_j}
+                \end{bmatrix}
+            \end{align*}
+            \item Linear mapping between $\dot{\bm{q}}$ and $\bm{u}$
+            \begin{align*}
+                \bm{u}=\bm{E}_{fb}\dot{\bm{q}},\quad\bm{E}_{fb}=
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3} & 0 & 0\\
+                    0 & \bm{E}_{\mathcal{X}_{R,b}} & 0\\
+                    0 & 0 & \mathbb{I}_{n_j\times n_j}
+                \end{bmatrix}
+            \end{align*}
+            \item[\faWarning] In literature, $\dot{\bm{q}}$ is commonly used instead of $\bm{u}$
+            \begin{itemize}
+                \item Note: $\bm{w}=\bm{J}_0\dot{\bm{q}}\Longleftrightarrow\bm{w}=\bm{J}_0\bm{E}_{fb}^{-1}\bm{u}$
+                \item For notation accuracy and brevity, define\\ $\bar{\bm{J}}_0:=\bm{J}_0\bm{E}_{fb}^{-1}\implies\bm{w}=\bar{\bm{J}}_0\bm{u}$
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FLOATING BASE DIFFERENTIAL KINEMATICS}}
+    \begin{itemize}
+        \item Position of an arbitrary point $Q$ on the robot
+        \begin{align*}
+            _\mathcal{I}\bm{r}_{IQ}(\bm{q})=\ _\mathcal{I}\bm{r}_{IB}(\bm{q})+\bm{C}_\mathcal{IB}(\bm{q})\ _\mathcal{B}\bm{r}_{BQ}(\bm{q})
+        \end{align*}
+        \item Velocity of $Q$
+        \begin{align*}
+            _\mathcal{I}\bm{v}_Q&=\ _\mathcal{I}\bm{v}_B+\dot{\bm{C}}_\mathcal{IB}\ _\mathcal{B}\bm{r}_{BQ}+\bm{C}_\mathcal{IB}\ _\mathcal{B}\dot{\bm{r}}_{BQ}\\
+            &=\ _\mathcal{I}\bm{v}_B+\bm{C}_\mathcal{IB}
+            \begin{bmatrix}
+                _\mathcal{B}\bm{\omega}_\mathcal{IB}
+            \end{bmatrix}_\times\ _\mathcal{B}\bm{r}_{BQ}+\bm{C}_\mathcal{IB}\ _\mathcal{B}\dot{\bm{r}}_{BQ}\\
+            &=\ _\mathcal{I}\bm{v}_B-\bm{C}_\mathcal{IB}
+            \begin{bmatrix}
+                _\mathcal{B}\bm{r}_{BQ}
+            \end{bmatrix}_\times\ _\mathcal{B}\bm{\omega}_\mathcal{IB}+\bm{C}_\mathcal{IB}\ _\mathcal{B}\dot{\bm{r}}_{BQ}\\
+            &=\ _\mathcal{I}\bm{v}_B-\bm{C}_\mathcal{IB}
+            \begin{bmatrix}
+                _\mathcal{B}\bm{r}_{BQ}
+            \end{bmatrix}_\times\ _\mathcal{B}\bm{\omega}_\mathcal{IB}+\bm{C}_\mathcal{IB}\ _\mathcal{B}\bm{J}_{0_{P_{q_j}},Q}(\bm{q}_j)(\bm{q}_j)\dot{\bm{q}}_j\\
+            &=
+            \underbrace{\begin{bmatrix}
+                \mathbb{I}_{3\times3} & -\bm{C}_\mathcal{IB}
+                \begin{bmatrix}
+                    _\mathcal{B}\bm{r}_{BQ}
+                \end{bmatrix}_\times & \bm{C}_\mathcal{IB}\ _\mathcal{B}\bm{J}_{0_{P_{q_j}},Q}(\bm{q}_j)
+            \end{bmatrix}}_{_\mathcal{J}\bm{J}_Q(\bm{q})}\bm{u}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CONTACT CONSTRAINTS}}
+    \begin{itemize}
+        \item A contact point $C_i$ is not allowed to move
+        \begin{align*}
+            &_\mathcal{I}\bm{r}_{IC_i}=\mathrm{const}\\
+            &\implies\ _\mathcal{I}\dot{\bm{r}}_{IC_i}=\bm{0}\Longleftrightarrow\ _\mathcal{I}\bar{\bm{J}}_{0_P,C_i}\bm{u}=\bm{0}\\
+            &\implies\ _\mathcal{I}\ddot{\bm{r}}_{IC_i}=\bm{0}\Longleftrightarrow\ _\mathcal{I}\bar{\bm{J}}_{0_P,C_i}\dot{\bm{u}}+\ _\mathcal{I}\dot{\bar{\bm{J}}}_{0_P,C_i}\bm{u}=\bm{0}
+        \end{align*}
+        \item Stack of constraints (contact Jacobians)
+        \begin{align*}
+            _\mathcal{I}\bar{\bm{J}}_{0_P,c}:=
+            \begin{bmatrix}
+                _\mathcal{I}\bar{\bm{J}}_{0_P,C_1}\\
+                \vdots\\
+                _\mathcal{I}\bar{\bm{J}}_{0_P,C_{n_c}}
+            \end{bmatrix}
+        \end{align*}
+        \faWarning\ Hereinafter, let $_\mathcal{I}\bar{\bm{J}}_{0_P,c}\equiv\bar{\bm{J}}_c$
+        \item Stack of $n_c$ contact points
+        \begin{align*}
+            \bm{r}_c:=
+            \begin{bmatrix}
+                _\mathcal{I}\bm{r}_{IC_1}\\
+                \vdots\\
+                _\mathcal{I}\bm{r}_{IC_{n_c}}
+            \end{bmatrix}
+        \end{align*}
+        \item System motion $\bm{u},\dot{\bm{u}}$ that doesn't violate contact constraints
+        \begin{align*}
+            &\dot{\bm{r}}_c=\bar{\bm{J}}_c\bm{u}=\bm{0}\Longleftrightarrow\bm{u}=\bar{\bm{J}}_c^\dagger\bm{0}+\bm{N}_c\bm{u}_0=\bm{N}_c\bm{u}_0\\
+            &\ddot{\bm{r}}_c=\bar{\bm{J}}_c\dot{\bm{u}}+\dot{\bar{\bm{J}}}_c\bm{u}=\bm{0}\Longleftrightarrow\dot{\bm{u}}=\bar{\bm{J}}_c^\dagger(-\dot{\bar{\bm{J}}}_c\bm{u})+\bm{N}_c\dot{\bm{u}}_0
+        \end{align*}
+        \begin{itemize}
+            \item Can be used e.g. as an additional task\\
+        \end{itemize}
+        \faWarning\ Hereinafter, assume $\bar{\bm{J}}_c=\bm{J}_c$
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CONTACT JACOBIAN PROPERTIES}}
+    \begin{itemize}
+        \item Separation into base and joints part
+        \begin{align*}
+            \bm{J}_c&=
+            \begin{bmatrix}
+                \bm{J}_{c_b} & \bm{J}_{c_j}
+            \end{bmatrix}\\
+            &=
+            \begin{bmatrix}
+                \frac{\partial\bm{r}_c}{\partial\bm{q}_b} & \frac{\partial\bm{r}_c}{\partial\bm{q}_j}
+            \end{bmatrix}\in
+            \begin{cases}
+                \mathbb{R}^{3n_c\times(n_b+n_j)} & \text{3D, point contacts}\\
+                \mathbb{R}^{2n_c\times(n_b+n_j)} & \text{2D, point contacts}
+            \end{cases}
+        \end{align*}
+        \includegraphics[width=0.95\textwidth]{media/Contact_Jacobian_Properties.drawio.pdf}
+        \item Physical interpretation
+        \begin{tabularx}{\columnwidth}{l>{\RaggedRight}m{5.0cm}}
+            $n_b$ & Base DOFs\\
+            \addlinespace[2pt]
+            $n_j$ & Joint DOFs\\
+            \addlinespace[2pt]
+            $n_b+n_j$ & Total DOFs\\
+            \addlinespace[2pt]
+            $\mathrm{rank}(\bm{J}_c)$ & Number of independent constraints (locks on the DOFs)\\
+            \addlinespace[2pt]
+            $\mathrm{nullity}(\bm{J}_c)$ & Number of DOFs for which motion is admissible\\
+            \addlinespace[2pt]
+            $\mathrm{rank}(\bm{J}_{c_b})$ & Number of constrained base DOFs (if all joints locked)\\
+            \addlinespace[2pt]
+            $\mathrm{nullity}(\bm{J}_{c_b})$ & Number of unconstrained (free) base DOFs (if all joints locked)\\
+            \addlinespace[2pt]
+            $\mathrm{rank}(\bm{J}_c)-\mathrm{rank}(\bm{J}_{c_b})$ & Number of kinematic joint constraints (internal constraints) that must be satisfied by joints\\
+        \end{tabularx}
+        \begin{itemize}
+            \item Note: $\mathrm{nullity}(\bm{A})$ is the dimension of the nullspace of $\bm{A}$
+            \item $6-\mathrm{rank}(\bm{J}_{c_b})$ unconstrained base DOFs
+            
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FLOATING BASE DYNAMICS}}
+    \mathbox{
+        \bm{M}(\bm{q})\dot{\bm{u}}+\bm{b}(\bm{q,u})+\bm{g}(\bm{q})=\bm{S}^\top\bm{\tau}+\bm{J}_\mathrm{ext}^\top\bm{F}_\mathrm{ext}
+    }
+    \begin{center}
+        \begin{tabularx}{\columnwidth}{lll}
+        & & Dimensions\\
+            $\bm{q}$ & Generalized coordinates & $n_q:=n_b+n_j$\\
+            $\bm{u}$ & Generalized velocities & $n_u:=6+n_j$\\
+            $\dot{\bm{u}}$ & Generalized accelerations & $n_u$\\
+            $\bm{M}(\bm{q})$ & Mass matrix & $n_u\times n_u$\\
+            $\bm{b}(\bm{q,u})$ & Centrifugal and Coriolis forces & $n_u$\\
+            $\bm{g}(\bm{q})$ & Gravity forces & $n_u$\\
+            $\bm{\tau}$ & \makecell[l]{Forces/torques acting in direction\\ of
+            generalized coordinates \\ ($n_\tau$ is number of actuated DOFs)} & $n_\tau$\\
+            $\bm{S}$ & \makecell[l]{Selection matrix of actuated joints\\ (corrects dimension)} & $n_\tau\times n_u$\\
+            $\bm{F}_\mathrm{ext}$ & \makecell[l]{External forces acting on system\\
+            (e.g. contacts)} & $3n_c$\\
+            $\bm{J}_\mathrm{ext}$ & Pos. Jacobian of external forces & $3n_c\times n_u$
+        \end{tabularx}
+    \end{center}
+    Note: the EoM can't be used directly for control due to the occurence of (unknown) contact forces
+\end{whitebox}
+
+\begin{whitebox}{\textbf{HARD CONTACT MODEL}}
+    \begin{minipage}[c]{0.65\linewidth}
+        \begin{itemize}
+            \item Closed contact
+            \begin{align*}
+                r^n=0,\ \dot{r}^n=0
+            \end{align*}
+            \item Linear complementarity constraint
+            \begin{align*}
+                \ddot{r}^n\geq 0,\ F^n\geq 0,\ \ddot{r}^nF^n=0
+            \end{align*}
+        \end{itemize}
+    \end{minipage}%
+    \begin{minipage}[c]{0.32\linewidth}
+           \includegraphics[width=\textwidth]{media/Hard_Contact_Model.drawio.pdf}
+    \end{minipage}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SOFT CONTACT MODEL}}
+    \begin{itemize}
+        \item Spring-damper environment
+        \begin{align*}
+            \bm{F}_c=k_p(\bm{r}_c-\bm{r}_{c0})+k_d\dot{\bm{r}}_c
+        \end{align*}
+        where $\bm{r}_{c0}$ is the point of first contact with the environment, and $\bm{F}_c=\bm{0}$ if not in contact i.e. never negative
+        \item Contact parameters selected as numerical (not physical) parameters to control tradeoff between numerical stability ("stiff" EoM needs small timesteps and can lead to instability) and physical accuracy
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CONSTRAINT/SUPPORT CONSISTENT DYNAMICS}}
+    \begin{itemize}
+        \item Derivation (goal: eliminate $\bm{F}_c$ from the EoM)
+        \begin{itemize}
+            \item Hard contact constraint
+            \begin{align*}
+                \dot{\bm{r}}_c=\bm{J}_c\bm{u}=\bm{0}&\implies\ddot{\bm{r}}_c=\bm{J}_c\dot{\bm{u}}+\dot{\bm{J}}_c\bm{u}=\bm{0}\\
+                &\implies\dot{\bm{J}}_c\bm{u}=-\bm{J}_c\dot{\bm{u}}
+            \end{align*}
+            \item Floating base dynamics
+            \begin{center}
+                \resizebox{0.90\textwidth}{!}{$
+                \begin{aligned}
+                    &\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c=\bm{S}^\top\bm{\tau}\implies\dot{\bm{u}}=\bm{M}^{-1}\left(\bm{S}^\top\bm{\tau}-(\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c)\right)\\
+                    &\ddot{\bm{r}}_c=\bm{J}_c\bm{M}^{-1}\left(\bm{S}^\top\bm{\tau}-(\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c)\right)+\dot{\bm{J}}_c\bm{u}=\bm{0}\\
+                    &\implies\bm{F}_c=\left(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top\right)^{-1}\left(\bm{J}_c\bm{M}^{-1}\left(\bm{S}^\top\bm{\tau}-(\bm{b}+\bm{g})\right)+\dot{\bm{J}}_c\bm{u}\right)
+                \end{aligned}$}    
+            \end{center}
+            \item Insert $\bm{F}_c$ into floating base dynamics
+            \begin{center}
+                \resizebox{0.90\textwidth}{!}{$
+                \begin{aligned}
+                    &\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}+\bm{J}_c^\top\left(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top\right)^{-1}\left(\bm{J}_c\bm{M}^{-1}\left(\bm{S}^\top\bm{\tau}-(\bm{b}+\bm{g})\right)+\dot{\bm{J}}_c\bm{u}\right)=\bm{S}^\top\bm{\tau}
+                \end{aligned}$}    
+            \end{center}
+            \item Use hard contact constraint $\dot{\bm{J}}_c\bm{u}=-\bm{J}_c\dot{\bm{u}}$
+            \begin{center}
+                \resizebox{0.90\textwidth}{!}{$
+                \begin{aligned}
+                    &\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}+\bm{J}_c^\top\left(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top\right)^{-1}\left(\bm{J}_c\bm{M}^{-1}\left(\bm{S}^\top\bm{\tau}-(\bm{b}+\bm{g})\right)-\bm{J}_c\dot{\bm{u}}\right)=\bm{S}^\top\bm{\tau}
+                \end{aligned}$}    
+            \end{center}
+            \item Multiply by $\bm{N}_c^\top$\\
+            where $\bm{N}_c:=\mathbb{I}-\bm{M}^{-1}\bm{J}_c^\top(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top)^{-1}\bm{J}_c$\\
+            and use $\bm{J}_c\bm{N}_c=0$ i.e. $\bm{N}_c^\top\bm{J}_c^\top=0$
+            \begin{align*}
+                \bm{N}_c^\top\left(\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}\right)=\bm{N}_c^\top\bm{S}^\top\bm{\tau}
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CONTACT DYNAMICS}}
+    \begin{itemize}
+        \item Assume perfect inelastic collision (Newtonian law)
+        \item Impulse transfer at contact
+        \item Integration of a single point in time
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                \int_{\{t_0\}}\left(\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c-\bm{S}^\top\bm{\tau}\right)dt=\bm{M}(\bm{u}^+-\bm{u}^-)+\bm{J}_c^\top\mathcal{F}_c=\bm{0}
+            \end{aligned}$}    
+        \end{center}
+        where $\mathcal{F}_c$ is an impulsive force and $\bm{u}^-$, $\bm{u}^+$ are pre- and post-impact generalized velocities, respectively
+        \begin{itemize}
+            \item Solve for $\mathcal{F}_c$ and use the condition $\dot{\bm{r}}_c^+=\bm{J}_c\bm{u}^+=\bm{0}$
+            \begin{align*}
+                \mathcal{F}_c=\left(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top\right)^{-1}\bm{J}_c\bm{u}^-=\bm{\Lambda}_c\dot{\bm{r}}_c^-
+            \end{align*}
+        \end{itemize}
+            \item Change in generalized velocity
+            \begin{align*}
+                \Delta\bm{u}=\bm{u}^+-\bm{u}^-=-\bm{M}^{-1}\bm{J}_c^\top\left(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top\right)^{-1}\bm{J}_c\bm{u}^-
+            \end{align*}
+        \begin{itemize}
+            \item Post-impact generalized velocity
+            \begin{align*}
+                \bm{u}^+=\left(\mathbb{I}-\bm{M}^{-1}\bm{J}_c^\top(\bm{J}_c\bm{M}^{-1}\bm{J}_c^\top)^{-1}\bm{J}_c\right)\bm{u}^-=\bm{N}_c\bm{u}^-
+            \end{align*}
+        \end{itemize}
+            \item Energy loss
+            \begin{center}
+                \resizebox{0.90\textwidth}{!}{$
+                \begin{aligned}
+                    E_\mathrm{loss}=\Delta E_K&=-\frac{1}{2}\Delta\bm{u}^\top\bm{M}\Delta\bm{u}=-\frac{1}{2}\Delta\dot{\bm{r}}_c^\top\bm{\Lambda}_c\Delta\dot{\bm{r}}_c=-\frac{1}{2}(\dot{\bm{r}}_c^-)^\top\bm{\Lambda}_c\dot{\bm{r}}_c^-
+                \end{aligned}$}    
+            \end{center}
+        \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SUPPORT CONSISTENT INVERSE DYNAMICS}}
+    \begin{align*}
+        &\bm{N}_c^\top\left(\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}\right)=\bm{N}_c^\top\bm{S}^\top\bm{\tau}\\
+        &\implies\bm{\tau}^*=\left(\bm{N}_c^\top\bm{S}^\top\right)^\dagger\bm{N}_c^\top\left(\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}\right)+\mathcal{N}\left(\bm{N}_c^\top\bm{S}^\top\right)\bm{\tau}_0^*
+    \end{align*}
+    \begin{itemize}
+        \item Internal force directions allow changing the force with the environment without changing the motion of the system (nullspace torque term)
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{TASK SPACE CONTROL AS QUADRATIC PROGRAM}}
+    \begin{itemize}
+        \item General form:
+        $
+        \arg\min_{\bm{x}}\left|\left|\bm{A}_i\bm{x}-\bm{b}_i\right|\right|_2,\quad\bm{x}=
+        \begin{bmatrix}
+            \dot{\bm{u}} & \bm{F}_c & \bm{\tau}
+        \end{bmatrix}^\top
+        $
+        \begin{center}
+            \begin{tabularx}{\columnwidth}{>{\RaggedRight}m{4.5cm}>{\RaggedRight}m{5.0cm}}
+                \makecell[l]{To fulfill EoM\\
+                $\bm{M}\dot{\bm{u}}+\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c=\bm{S}^\top\bm{\tau}$} &
+                $\begin{aligned}
+                    &\bm{A}=
+                    \begin{bmatrix}
+                        \hat{\bm{M}} & \hat{\bm{J}}_c^\top & -\bm{S}^\top
+                    \end{bmatrix}\\
+                    &\bm{b}=-\hat{\bm{b}}-\hat{\bm{g}}
+                \end{aligned}$\\
+                \addlinespace[10pt]
+                \makecell[l]{Motion tasks\\
+                 $\bm{J}_i\dot{\bm{u}}+\dot{\bm{J}}_i\bm{u}=\dot{\bm{w}}^*$} &
+                 $\begin{aligned}
+                     &\bm{A}=
+                    \begin{bmatrix}
+                        \hat{\bm{J}}_i & \bm{0} & \bm{0}
+                    \end{bmatrix}\\
+                    &\bm{b}=\dot{\bm{w}}^*-\hat{\dot{\bm{J}}}_i\bm{u}
+                 \end{aligned}$\\
+                 \addlinespace[10pt]
+                 \makecell[l]{Force tasks\\
+                 $\bm{F}_c=\bm{F}_i^*$} & 
+                 $\begin{aligned}
+                     &\bm{A}=
+                    \begin{bmatrix}
+                        \bm{0} & \mathbb{I} & \bm{0}
+                    \end{bmatrix}\\
+                    &\bm{b}=\bm{F}_i^*
+                 \end{aligned}$\\
+                 \addlinespace[10pt]
+                 \makecell[l]{Torque minimization} & 
+                 $\begin{aligned}
+                    &\bm{A}=
+                    \begin{bmatrix}
+                        \bm{0} & \bm{0} & \mathbb{I}
+                    \end{bmatrix}\\
+                    &\bm{b}=\bm{0}
+                 \end{aligned}$
+            \end{tabularx}
+        \end{center}
+    \end{itemize}
+\end{whitebox}

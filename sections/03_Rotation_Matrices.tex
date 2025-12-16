@@ -1,0 +1,120 @@
+\section{ROTATION MATRICES}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $\bm{C}_{\mathcal{AB}}$ & Passive rotation matrix (from frame $\mathcal{B}$ to $\mathcal{A}$)\\ & aka direction cosine matrix (DCM)\\
+        \addlinespace[2pt]
+        $\bm{R}$ & Active rotation matrix
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{FRAME TRANSFORMATION}}
+    \begin{itemize}
+        \item Rotation matrix $\bm{C}_{\mathcal{AB}}$ transforms vectors w.r.t. frame $\mathcal{B}$ to vectors w.r.t. frame $\mathcal{A}$
+    	\mathbox{
+    		_\mathcal{A}\bm{r}_{AC}=\bm{C}_{\mathcal{AB}}\cdot\ _\mathcal{B}\bm{r}_{AC}
+    	}
+        \item Columns of $\bm{C}_{\mathcal{AB}}$ are unit vectors of $\mathcal{B}$ w.r.t. $\mathcal{A}$
+        \mathbox{
+		\bm{C}_{\mathcal{AB}}=
+		\begin{bmatrix}
+                _\mathcal{A}\bm{e}^\mathcal{B}_x & _\mathcal{A}\bm{e}^\mathcal{B}_y &            _\mathcal{A}\bm{e}^\mathcal{B}_z
+		\end{bmatrix}
+        }
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{PROPERTIES}}
+    \begin{itemize}
+        \item Orthogonality
+        \begin{align*}
+            \bm{C}_{\mathcal{BA}}=\bm{C}^{-1}_{\mathcal{AB}}=\bm{C}^\top_{\mathcal{AB}}
+        \end{align*}
+        \begin{itemize}
+            \item Imposes 6 constraints on the 9 parameters
+        \end{itemize}
+    \item No singularity problem
+	\item Special orthonormal group
+        \begin{align*}
+            \bm{C}\in\mathrm{SO}(3):=\{\bm{C}\in\mathbb{R}^{3\times 3}\ |\ \bm{C}^\top\bm{C}=\mathbb{I},\det(\bm{C})=\pm 1\}
+        \end{align*}
+	\item Concatenation of rotations
+	\mathbox{
+		\bm{C}_{\mathcal{AC}}=\bm{C}_{\mathcal{AB}}\bm{C}_{\mathcal{BC}}
+	}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ACTIVE/PASSIVE ROTATIONS}}
+    \begin{itemize}
+        \item Passive rotations map the same vector from frame $\mathcal{B}$ to $\mathcal{A}$
+	\begin{align*}
+		_\mathcal{A}\bm{u}=\bm{C}_{\mathcal{AB}}\cdot\ _\mathcal{B}\bm{u}
+	\end{align*}
+	\item Active rotations rotate a vector in thee same frame
+	\begin{align*}
+		_\mathcal{A}\bm{v}=\bm{R}\cdot\ _\mathcal{A}\bm{u}
+	\end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ELEMENTARY ROTATIONS}}
+    \begin{itemize}
+        \item Passive rotation about the $x$-axis:
+		\begin{align*}
+			\bm{C}_x(\varphi)=
+			\begin{bmatrix}
+				1 & 0 & 0\\
+				0 & \cos\varphi & -\sin\varphi\\
+				0 & \sin\varphi & \cos\varphi
+			\end{bmatrix}, \quad\bm{R}_x(\varphi)=\bm{C}^\top_x(\varphi)
+		\end{align*}
+		\item Passive rotation about the $y$-axis:
+		\begin{align*}
+			\bm{C}_y(\varphi)=
+			\begin{bmatrix}
+				\cos\varphi & 0 & \sin\varphi\\
+				0 & 1 & 0\\
+				-\sin\varphi & 0 & \cos\varphi
+			\end{bmatrix}, \quad\bm{R}_y(\varphi)=\bm{C}^\top_y(\varphi)
+		\end{align*}
+		\item Passive rotation about the $z$-axis:
+		\begin{align*}
+			\bm{C}_z(\varphi)=
+			\begin{bmatrix}
+				\cos\varphi & -\sin\varphi & 0\\
+				\sin\varphi & \cos\varphi & 0\\
+				0 & 0 & 1
+			\end{bmatrix}, \quad\bm{R}_z(\varphi)=\bm{C}^\top_z(\varphi)
+		\end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ROTATION COMPOSITIONS}}
+    \begin{itemize}
+        \item Concatenate a rotation $\bm{C}_1$ with a successive rotation...
+        \begin{itemize}
+            \item $\color{red}{\bm{C}_2}$ defined in moving (intrinsic) axes: $\bm{C}=\bm{C}_1\color{red}{\bm{C}_2}$\\
+            (postmultiply)
+            \item $\color{red}{\bm{C}_2}$ defined in fixed (extrinsic) axes: $\bm{C}={\color{red}\bm{C}_2}\bm{C}_1$\\
+            (premultiply)
+        \end{itemize}
+        \item Example: two interpretations for $\bm{C}_{z}(\psi)\bm{C}_{y}(\theta)\bm{C}_{x}(\phi)$
+        \begin{itemize}
+            \item Intrinsic convention (intrinsic $ZYX$ Euler angles)
+            \begin{enumerate}
+                \item Rotate around $z$
+                \item Rotate around rotated $y$
+                \item Rotate around rotated $x$
+            \end{enumerate}
+            \item Extrinsic convention (extrinsic $XYZ$ Euler angles)
+            \begin{enumerate}
+                \item Rotate around $x$
+                \item Rotate around original $y$
+                \item Rotate around original $z$
+            \end{enumerate}
+        \end{itemize}
+        Note: intrinsic $ZYX=$ extrinsic $XYZ$\\
+        \faWarning\ The intrinsic convention will be used hereinafter
+    \end{itemize}
+\end{whitebox}

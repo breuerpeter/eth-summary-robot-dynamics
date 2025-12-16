@@ -1,0 +1,74 @@
+\section{LINEAR VELOCITY}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $_\mathcal{A}\dot{\bm{r}}_{BC}$ & Linear velocity of point $C$ relative to point $B$\\
+        & (w.r.t. frame $\mathcal{A}$)\\
+        \addlinespace[2pt]
+        $\bm{v}_C=\ _\mathcal{I}\dot{\bm{r}}_{IC}$ & Absolute linear velocity of a point $C$\\
+        & (only w.r.t. any fixed frame $\mathcal{I}$ with origin $I$)\\
+        \addlinespace[2pt]
+        $\bm{a}_C=\dot{\bm{v}}_C$ & Absolute acceleration of a point $C$\\
+        \addlinespace[2pt]
+        $\bm{\Omega}_\mathcal{B}=\ _\mathcal{I}\bm{\omega}_\mathcal{IB}$ & Absolute angular velocity of a body $\mathcal{B}$\\
+        & (only w.r.t. a fixed frame $\mathcal{I}$)\\
+        \addlinespace[2pt]
+        $\bm{\Psi}_\mathcal{B}=\dot{\bm{\Omega}}_\mathcal{B}$ & Absolute angular acceleration of a body $\mathcal{B}$
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{RELATION TO }$\dot{\bm{\mathcal{X}}}_P$}
+    \begin{itemize}
+        \item $\bm{E}_P(\bm{\mathcal{X}}_P)$ relates linear velocity $\dot{\bm{r}}$ to the time derivative of the (position) representation $\dot{\bm{\mathcal{X}}}_P$
+        \begin{align*}
+    	   \dot{{\bm{r}}}=\underbrace{\frac{\partial \bm{r}}{\partial\bm{\mathcal{X}}_P}}_{=:\bm{E}_P(\mathcal{X}_P)}\dot{\bm{\mathcal{X}}}_P
+        \end{align*}
+        \mathbox{
+            \dot{{\bm{r}}}&=\bm{E}_P(\bm{\mathcal{X}}_P)\dot{\bm{\mathcal{X}}}_P\\
+            \Longleftrightarrow\dot{\bm{\mathcal{X}}}_P&=\bm{E}_P^{-1}(\bm{\mathcal{X}}_P)\dot{{\bm{r}}}
+        }   
+        \begin{itemize}
+            \item Cartesian system
+            \begin{align*}
+            \bm{E}_{Pc}(\bm{\mathcal{X}}_{Pc})=\bm{E_{Pc}}^{-1}(\bm{\mathcal{X}}_{Pc})=\mathbb{I}
+        \end{align*}
+        \item Cylindrical system
+        \begin{align*}
+            &\bm{E}_{Pz}(\bm{\mathcal{X}}_{Pz})=
+            \begin{bmatrix}
+                \cos\theta & -\rho\sin\theta & 0\\
+                \sin\theta & \rho\cos\theta & 0\\
+                0 & 0 & 1
+            \end{bmatrix}\\
+            &\bm{E}_{Pz}^{-1}(\bm{\mathcal{X}}_{Pz})=
+            \begin{bmatrix}
+                \cos\theta & \sin\theta & 0\\
+                -\frac{\sin\theta}{\rho} & \frac{\cos\theta}{\rho} & 0\\
+                0 & 0 & 1
+            \end{bmatrix}
+        \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{VELOCITY IN RIGID MOVING BODIES}}
+    \begin{itemize}
+        \item Rigid body formulation
+        \begin{align*}
+            _\mathcal{I}\bm{r}_{IC}=\ _\mathcal{I}\bm{r}_{IB}+\ _\mathcal{I}\bm{r}_{BC}=\ _\mathcal{I}\bm{r}_{IB}+\bm{C}_\mathcal{IB}\ _\mathcal{B}\bm{r}_{BC}
+        \end{align*}
+        where $B,C$ are points on a rigid body $\mathcal{B}$
+        \begin{align*}
+            \implies_\mathcal{I}\dot{\bm{r}}_{IC}&=\ _\mathcal{I}\dot{\bm{r}}_{IC}+\bm{C}_\mathcal{IC}\ \cancelto{\bm{0}}{_\mathcal{B}\dot{\bm{r}}_{BC}}+\dot{\bm{C}}_\mathcal{IB}\ _\mathcal{B}\bm{r}_{BC}\\
+            &=\ _\mathcal{I}\dot{\bm{r}}_{IB}+
+            \begin{bmatrix}
+                _\mathcal{I}\bm{\omega}_\mathcal{IB}
+            \end{bmatrix}_\times\bm{C}_\mathcal{IB}\ _\mathcal{B}\bm{r}_{BC}\\
+            &=\ _\mathcal{I}\dot{\bm{r}}_{IB}+\ _\mathcal{I}\bm{\omega}_\mathcal{IB}\times\ _\mathcal{I}\bm{r}_{BC}
+        \end{align*}
+        using $\dot{\bm{C}}_\mathcal{IB}=\begin{bmatrix}_\mathcal{I}\bm{\omega}_\mathcal{IB}\end{bmatrix}_\times\bm{C}_\mathcal{IB}$
+        \mathbox{
+            \bm{v}_C=\bm{v}_B+\bm{\Omega}_\mathcal{B}\times\ _\mathcal{I}\bm{r}_{BC}
+        }
+    \end{itemize}
+\end{whitebox}

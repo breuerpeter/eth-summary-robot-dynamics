@@ -1,0 +1,256 @@
+\section{KINEMATIC CONTROL}
+
+\begin{whitebox}{\textbf{INVERSE KINEMATICS}}
+    \begin{itemize}
+        \item Inverse kinematics: generalized coordinates $\bm{q}$ as a function of end-effector configuration $\bm{\mathcal{X}}_e$
+            \begin{align*}
+                \bm{q}=\bm{q}(\bm{\mathcal{X}}_e)
+            \end{align*}
+        \item Inverse differential kinematics
+        \begin{itemize}
+            \item Jacobians map velocities from joint- to task-space
+            \begin{itemize}
+                \item Geometric ($\dot{\bm{q}}\mapsto\ _\mathcal{I}\bm{w}_e$): $_\mathcal{I}\bm{J}_{0,e}\in\mathbb{R}^{\dim(_\mathcal{I}\bm{w}_e)\times\dim(\bm{q})}$
+                \item Analytical $(\dot{\bm{q}}\mapsto\ \dot{\bm{\mathcal{X}}}_e$): $\bm{J}_{A,e}\in\mathbb{R}^{\dim(\dot{\bm{\mathcal{X}}}_e)\times\dim(\bm{q})}$
+            \end{itemize}
+            \item (Moore-Penrose) pseudo-inverse of Jacobian for inverse mapping
+            \mathbox{
+                \dot{\bm{q}}=\ _\mathcal{I}\bm{J}_{0,e}^\dagger\ _\mathcal{I}\bm{w}_e^*
+            }
+            Note: $\bm{J}^\dagger=\bm{J}^\top(\bm{J}\bm{J}^\top)^{-1}=(\bm{J}^\top\bm{J})^{-1}\bm{J}$
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MATRIX INVERSION}}
+    \begin{itemize}
+        \item \textbf{Square} matrices
+        \begin{itemize}
+            \item $n\times n$ matrix $\bm{A}$ is invertible/nonsingular if $\exists$ $n\times n$ matrix $\bm{B}$ s.t. $\bm{AB}=\bm{BA}=\mathbb{I}_{n\times n}$ or simply $\det(\bm{A})\neq 0$
+        \end{itemize}
+        \item \textbf{Non-square} matrices (generalization of the inverse): Moore-Penrose pseudo inverse (most common)
+        \begin{itemize}
+            \item Generalized inverse must fulfill condition $ABA=\bm{A}$
+            \begin{itemize}
+                \item In general, $\bm{B}$ is not unique
+                \item Moore-Penrose addresses this non-uniqueness by enforcing three additional conditions ($\bm{A}\in\mathbb{R}^{m\times n}$)
+                \begin{align*}
+                    &\bm{A}^\dagger \bm{AA}^\dagger=\bm{A}^\dagger\\
+                    &(\bm{A}^\dagger \bm{A})^\top=\bm{A}^\dagger \bm{A}\\
+                    &(\bm{AA}^\dagger)^\top=\bm{AA}^\dagger
+                \end{align*}
+            \end{itemize}
+            \item \textbf{Tall} matrices: $m\geq n$
+            \begin{itemize}
+                \item Full column rank; row rank deficient
+                \item Inverse of $\bm{A}^\top \bm{A}$ is defined
+                \begin{align*}
+                    \bm{A}^\dagger=(\bm{A}^\top \bm{A})^{-1}\bm{A}^\top
+                \end{align*}
+                where $\bm{A}^\dagger$ is "left inverse" of $\bm{A}$ i.e. $\bm{A}^\dagger \bm{A}=\mathbb{I}$
+                \item For linear set of equations $\bm{Ax}=\bm{b}$ there are more equations than variables, therefore no exact solution
+                \begin{itemize}
+                    \item $\bm{A}^\dagger \bm{b}$ minimizes the least squares error $||\bm{Ax}-\bm{b}||_2^2$
+                \end{itemize}
+            \end{itemize}
+            \item \textbf{Wide} matrices: $m\leq n$\\
+            \begin{itemize}
+                \item Full row rank; column rank deficient
+                \item Inverse of $\bm{AA}^\top$ is defined
+                \begin{align*}
+                    \bm{A}^\dagger=\bm{A}^\top(\bm{AA}^\top)^{-1}
+                \end{align*}
+                where $\bm{A}^\dagger$ is "right inverse" of $\bm{A}$ i.e. $\bm{AA}^\dagger=\mathbb{I}$
+                \item For linear set of equations $\bm{Ax}=\bm{b}$ there are more variables than equations, therefore multiple solutions
+                \begin{align*}
+                    \bm{x}=\bm{A}^\dagger \bm{b}+\mathcal{N}(\bm{A})\bm{x}_0,\ \mathcal{N}(\bm{A})=\bm{N}_A=\mathbb{I}-\bm{A}^\dagger \bm{A},\ \bm{AN}_A=0
+                \end{align*}
+                \begin{itemize}
+                    \item $\bm{x}=\bm{A}^\dagger \bm{b}$ minimizes $||\bm{x}||_2$ while ensuring $\bm{Ax}=\bm{b}$
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+        \item Rank of a matrix $\bm{A}\in\mathbb{R}^{m\times n}$
+        \begin{itemize}
+            \item $rank(\bm{A})$ is largest number of columns of $\bm{A}$ that constitute a linearly independent set (this set is not necessarily unique but the cardinality i.e. rank is)
+            \item Row rank equals column rank: $rank(\bm{A})=rank(\bm{A}^\top)$
+            \item Full rank: $rank(\bm{A})=\min(m,n)$
+            \item Column-/row rank deficient: rows/columns are not linearly independent 
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SINGULARITIES AND REDUNDANCY}}
+    \begin{itemize}
+        \item Singularity: joint-space configuration $\bm{q}_s$ such that $_\mathcal{I}\bm{J}_{0,e}(\bm{q}_s)=:\bm{J}$ is column-rank deficient
+        \begin{itemize}
+            \item Boundary singularity: e.g. manipulator stretched out; prevented in motion planning
+            \item Internal singularity
+            \item Jacobian is poorly conditioned
+            \item Small desired twist $_\mathcal{I}\bm{w}_e^*$ produce high $\dot{\bm{q}}$
+        \end{itemize}
+        \item Damped version of Moore-Penrose pseudo inverse
+        \begin{align*}
+            \dot{\bm{q}}&=\ \bm{J}^\top(\bm{J}\  \bm{J}^\top+\lambda^2\mathbb{I})^{-1}\ _\mathcal{I}\bm{w}_e^*,\quad \lambda\in\mathbb{R}>0\\
+            &\Longleftrightarrow\arg\min_{\dot{\bm{q}}}||_\mathcal{I}\bm{w}_e^*-\ \bm{J}\dot{\bm{q}}||^2+\lambda^2||\dot{\bm{q}}||^2
+        \end{align*}
+        \item Redundancy: task-space has lower dimension than the joint-space i.e. $\dim(_\mathcal{I}\bm{w}_e)<\dim(\bm{q})$
+        \begin{itemize}
+            \item Redundancy implies infinite solutions
+            \begin{align*}
+                \dot{\bm{q}}=\ \bm{J}^\dagger\ _\mathcal{I}\bm{w}_e^*+\bm{N}\dot{\bm{q}}_0
+            \end{align*}
+            where $\bm{N}=\mathcal{N}(\bm{J})$ is the null-space ($\mathcal{N}$) projection for which it holds that
+            \begin{align*}
+                \bm{J}\bm{N}=\bm{0}
+            \end{align*}
+        \end{itemize}
+        \item Null-space allows joint-space motion without changing task-space motion:
+        \begin{align*}
+            \bm{J}\dot{\bm{q}}=\ \bm{J}\left(\bm{J}^\dagger\ _\mathcal{I}\bm{w}_e^*+\bm{N}\dot{\bm{q}}_0\right)=\ _\mathcal{I}\bm{w}_e^*
+        \end{align*}
+        \begin{itemize}
+            \item Null-space projection matrix computation
+            \begin{align*}
+                \bm{N}=\mathbb{I}-\ \bm{J}^\dagger\ \bm{J}
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MULTI-TASK CONTROL}}
+    \begin{itemize}
+        \item Manipulation/locomotion (of redundant systems) as combination of high level tasks
+        \begin{align*}
+            \mathrm{task}_i:=\{\bm{J}_i,\bm{w}_i^*\}
+        \end{align*}
+        \item Multi-task with equal priority
+        \begin{itemize}
+            \item Stack $n_t$ tasks and use pseudo-inverse
+            \begin{align*}
+                \dot{\bm{q}}&=\underbrace{
+                \begin{bmatrix}
+                    \bm{J}_1\\
+                    \vdots\\
+                    \bm{J}_{n_t}
+                \end{bmatrix}^\dagger}_{\bar{\bm{J}}}\underbrace{
+                \begin{bmatrix}
+                    \bm{w}_1^*\\
+                    \vdots\\
+                    \bm{w}_{n_t}^*
+                \end{bmatrix}}_{\bar{\bm{w}}}\\
+                &=\arg\min_{\dot{\bm{q}}}||\bar{\bm{J}}\dot{\bm{q}}-\bar{\bm{w}}||_2=\arg\min_{\dot{\bm{q}}}||\dot{\bm{q}}||_2\mathrm{\ subject\ to\ }\bar{\bm{J}}\dot{\bm{q}}=\bar{\bm{w}}
+            \end{align*}
+            \item Weigh some tasks higher than others with weight matrix $\bm{W}=\mathrm{diag}(w_1,\dots,w_m)$ changing $\bar{\bm{J}}$ to $\bar{\bm{J}}^{W}$
+            \begin{align*}
+                \bar{\bm{J}}^{W\dagger}=\left(\bar{\bm{J}}^\top\bm{W}\bar{\bm{J}}\right)^{-1}\bar{\bm{J}}^\top\bm{W}
+            \end{align*}
+        \end{itemize}
+        \item Multi-task with prioritization (ensuring strict priority i.e. preceding task satisfied before attempting to satisfy next)
+        \begin{itemize}
+            \item Task 1 (highest priority)
+            \begin{align*}
+                \dot{\bm{q}}=\bm{J}_1^\dagger\bm{w}_1^*+\bm{N}_1\dot{\bm{q}}_0
+            \end{align*}
+            \item Task 2 (solution mustn't violate task 1)
+            \begin{align*}
+                \bm{w}_2=\bm{J}_2\dot{\bm{q}}=\bm{J}_2(\bm{J}_1^\dagger\bm{w}_1^*+\bm{N}_1\dot{\bm{q}}_0)
+            \end{align*}
+            \begin{itemize}
+                \item Solve for $\dot{\bm{q}}_0$
+                \begin{align*}
+                    \dot{\bm{q}}_0=(\bm{J}_2\bm{N}_1)^\dagger(\bm{w}_2^*-\bm{J}_2\bm{J}_1^\dagger\bm{w}_1^*)
+                \end{align*}
+                \item New solution for task 1 (without violating it)
+                \begin{align*}
+                    \dot{\bm{q}}=\bm{J}_1^\dagger\bm{w}_1^*+\bm{N}_1(\bm{J}_2\bm{N}_1)^\dagger(\bm{w}_2^*-\bm{J}_2\bm{J}_1^\dagger\bm{w}_1^*)
+                \end{align*}
+            \end{itemize}
+            \item Generalization for $n_t$ tasks
+            \begin{align*}
+                \dot{\bm{q}}=\sum_{i=1}^{n_t}\bar{\bm{N}}_{i-1}\dot{\bm{q}}_i,\quad
+                \dot{\bm{q}}_i=(\bm{J}_i\bar{\bm{N}}_{i-1})^\dagger\left(\bm{w}_i^*-\bm{J}_i\sum_{k=1}^{i-1}\bar{\bm{N}}_{k-1}\dot{\bm{q}}_k\right)
+            \end{align*}
+            where $\bar{\bm{N}}_i$ is the null-space projection of the stacked Jacobian $\bar{\bm{J}}_i=\begin{bmatrix}\bm{J}_1^\top & \hdots & \bm{J}_{i-1}^\top\end{bmatrix}^\top$
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ITERATIVE INVERSE DIFFERENTIAL KINEMATICS}}
+    \begin{itemize}
+        \item Iterative solution to the inverse kinematics problem with target configuration $\bm{\mathcal{X}}_e^*$ and initial joint space guess $\bm{q}^0$
+        \begin{center}
+            \begin{algorithmic}
+                \footnotesize
+                \State $\bm{q}\leftarrow\bm{q}^0$\Comment{Start configuration}
+                % \Loop
+                \While{$||\bm{\mathcal{X}}_e^*-\bm{\mathcal{X}}_e(\bm{q})||\geq\mathrm{tol}$}\Comment{While solution is not reached}
+                \State $\bm{J}_{A,e}\leftarrow\bm{J}_{A,e}(\bm{q})=\frac{\partial\bm{\mathcal{X}}_e}{\partial\bm{q}}(\bm{q})$\Comment{Evaluate Jacobian}
+                \State $\bm{J}_{A,e}^\dagger\leftarrow(\bm{J}_{A,e}(\bm{q}))^\dagger$\Comment{Compute pseudo-inverse}
+                \State $\Delta\bm{\mathcal{X}}_e\leftarrow\bm{\mathcal{X}}_e^*-\bm{\mathcal{X}}_e(\bm{q})$\Comment{Compute configuration error}
+                \State $\bm{q}\leftarrow\bm{q}+\bm{J}_{A,e}^\dagger\Delta\bm{\mathcal{X}}_e$\Comment{Update generalized coordinates}
+                \EndWhile
+                % \EndLoop
+            \end{algorithmic}
+        \end{center}
+        
+        \begin{itemize}
+            \item Use scaling factor $k\in(0,1)$ to prevent overshoot (slows convergence)
+            \begin{align*}
+                \bm{q}\leftarrow\bm{q}+k\bm{J}_{A,e}^\dagger\Delta\bm{\mathcal{X}}_e
+            \end{align*}
+            \item Use damped pseudo-inverse (Levenberg-Marquardt) or transpose to prevent problems due to ill-conditioned inversion problem in singular configurations
+            \begin{align*}
+                \bm{q}&\leftarrow\bm{q}+\bm{J}_{A,e}^\top(\bm{J}_{A,e}\bm{J}_{A,e}^\top+\lambda^2\mathbb{I})^{-1}\Delta\bm{\mathcal{X}}_e\\
+                \text{or}\quad\bm{q}&\leftarrow\bm{q}+\alpha\bm{J}_{A,e}^\top\Delta\bm{\mathcal{X}}_e
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ROTATION ERROR}}
+    \begin{itemize}
+        \item $\bm{J}_{A,e}$ depends on parameterization and thus affects convergence from start to target configuration
+        \item Rotate along shortest path in $\mathrm{SO}(3)$ using rotation vector
+        \begin{align*}
+            \Delta\bm{\mathcal{X}}_e=\bm{\mathcal{X}}_{R,\mathrm{RotVec}}=\theta\bm{n}=:\Delta\bm{\varphi}
+        \end{align*}
+        \item Extract rotation vector $_\mathcal{I}\Delta\bm{\varphi}$ from relative rotation between the current orientation $\bm{\varphi}_k$ (frame $\mathcal{K}$) and target orientation $\bm{\varphi}^*$ (frame $\mathcal{T}$)
+        \begin{align*}
+            \bm{C}_\mathcal{KT}(\Delta\bm{\varphi})&=\bm{C}_\mathcal{IK}^\top(\bm{\varphi}_k)\bm{C}_\mathcal{IT}(\bm{\varphi}^*)\\
+            _\mathcal{K}\Delta\bm{\varphi}=\ _\mathcal{T}\Delta\bm{\varphi}&=\mathrm{RotVec}(\bm{C}_\mathcal{KT})\\
+            _\mathcal{I}\Delta\bm{\varphi}=\bm{C}_\mathcal{IK}\ _\mathcal{K}\Delta\bm{\varphi}&=\bm{C}_\mathcal{IK}\mathrm{RotVec}(\bm{C}_\mathcal{KT})\\
+            &=\mathrm{RotVec}(\bm{C}_\mathcal{IK}\bm{C}_\mathcal{KT}\bm{C}_\mathcal{IK}^\top)\\
+            &=\mathrm{RotVec}(\bm{C}_\mathcal{IT}\bm{C}_\mathcal{IK}^\top)
+        \end{align*}
+        \item Given small rotation offsets, rotating along the shortest path allows using the geometric Jacobian
+        \begin{align*}
+            \bm{q}&\leftarrow\bm{q}+k_{p_R}\ _\mathcal{I}\bm{J}_{0_R,e}^\dagger\ _\mathcal{I}\Delta\bm{\varphi}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{KINEMATIC TRAJECTORY CONTROL}}
+    \begin{itemize}
+        \item Position
+            \begin{itemize}
+                \item End-effector desired motion $_\mathcal{I}\bm{r}_{IE}^*(t)$ and $_\mathcal{I}\dot{\bm{r}}_{IE}^*(t)$
+                \item Tracking error $\Delta_\mathcal{I}\bm{r}_{IE}(t)=\ _\mathcal{I}\bm{r}_{IE}^*(t)-\ _\mathcal{I}\bm{r}_{IE}(t)$
+                \item Nonlinear stabilizing control law
+                \begin{align*}
+                    \dot{\bm{q}}^*=\ _\mathcal{I}\bm{J}_{0_P,e}^\dagger(_\mathcal{I}\dot{\bm{r}}_{IE}^*(t)+k_{p_P}\Delta_\mathcal{I}\bm{r}_{IE}(t))
+                \end{align*}
+                \begin{itemize}
+                    \item Desired velocity used as feedforward
+                    \item P controller for feedback
+                \end{itemize}
+            \end{itemize}
+        \item Orientation
+        \begin{itemize}
+            \item Nonlinear stabilizing control law
+            \begin{align*}
+                \dot{\bm{q}}^*=\ _\mathcal{I}\bm{J}_{0_R,e}^\dagger(_\mathcal{I}\bm{\omega}_\mathcal{IE}^*(t)+k_{p_R}\ _\mathcal{I}\Delta\bm{\varphi})
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}

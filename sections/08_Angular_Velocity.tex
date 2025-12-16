@@ -1,0 +1,187 @@
+\section{ANGULAR VELOCITY}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $\bm{\Omega}_\mathcal{B}=\ _\mathcal{I}\bm{\omega}_\mathcal{IB}$ & Absolute angular velocity of a body $B$\\
+        & (only w.r.t. a fixed frame $\mathcal{I}$)\\
+        \addlinespace[2pt]
+        $\bm{\Psi}_\mathcal{B}=\dot{\bm{\Omega}}_\mathcal{B}$ & Absolute angular acceleration of a body $B$\\
+        \addlinespace[2pt]
+        $\bm{\mathcal{X}}_{R,\mathcal{B}}$ & Rotation parameterization of a body $\mathcal{B}$
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{PROPERTIES}}
+    \begin{itemize}
+        \item Angular velocity $_\mathcal{A}\bm{\omega}_\mathcal{AB}$ describes the relative rotational velocity of frame $\mathcal{B}$ w.r.t. frame $\mathcal{A}$ (expressed in frame $\mathcal{A}$)
+        \begin{align*}
+            _\mathcal{A}\bm{\omega}_\mathcal{AB}=\lim_{\epsilon\to 0}\frac{_\mathcal{A}\bm{\varphi}_{\mathcal{B}(t)\mathcal{B}(t+\epsilon)}}{\epsilon}
+        \end{align*}
+        where $\bm{\varphi}$ is a rotation vector
+        \begin{itemize}
+            \item For $\epsilon\to 0$, the angular velocity is defined as the ratio of a proper vector and a scalar
+        \end{itemize}
+        \item Opposite direction
+        \begin{align*}
+            \bm{\omega}_\mathcal{AB}=-\bm{\omega}_\mathcal{BA}
+        \end{align*}
+        \item Transformation of angular velocity
+		\begin{align*}
+			_\mathcal{B}\bm{\omega}_\mathcal{AB}=\bm{C}_{\mathcal{BA}}\cdot\ _\mathcal{A}\bm{\omega}_\mathcal{AB}
+		\end{align*}
+	\item Addition of relative velocities
+		\begin{align*}
+			_\mathcal{D}\bm{\omega}_\mathcal{AC}=\ _\mathcal{D}\bm{\omega}_\mathcal{AB}+\ _\mathcal{D}\bm{\omega}_\mathcal{BC}
+		\end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{RELATION TO }$\dot{\bm{\mathcal{X}}}_R$}
+    \begin{itemize}
+        \item $\bm{E}_R(\bm{\mathcal{X}}_R)\in\mathbb{R}^{3\times \dim(\bm{\mathcal{X}}_R)}$ relates angular velocity $\bm{\omega}$ to the time derivative of the rotation representation $\dot{\bm{\mathcal{X}}}_R$
+        \mathbox{
+            _\mathcal{A}\bm{\omega}_\mathcal{AB}&=\bm{E}_R(\bm{\mathcal{X}}_R)\dot{\bm{\mathcal{X}}}_R\\
+        	\Longleftrightarrow\dot{\bm{\mathcal{X}}}_R&=\bm{E}_R^{-1}(\bm{\mathcal{X}}_R)_\mathcal{A}\bm{\omega}_\mathcal{AB}
+        }
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{DERIVING }$\bm{E}_{R,\mathrm{Euler,}ZYX}$}
+    \begin{itemize}
+        \item $ZYX$ Tait-Bryan angles $\bm{\mathcal{X}}_R=\begin{bmatrix}\psi & \theta & \phi\end{bmatrix}^\top$ defining 
+        \begin{align*}
+            \bm{C}_\mathcal{AD}=\bm{C}_\mathcal{AB}(\psi)\bm{C}_\mathcal{BC}(\theta)\bm{C}_\mathcal{CD}(\phi)
+        \end{align*}
+        \begin{enumerate}
+            \item $\bm{C}_\mathcal{AB}$ is rotation (yaw $\psi$) around $\bm{e}_z^\mathcal{I}$ i.e. $\bm{C}_z(\psi)$
+            \item $\bm{C}_\mathcal{BC}$ is rotation (pitch $\theta$) around $\bm{e}_y^1$ i.e. $\bm{C}_y(\theta)$
+            \item $\bm{C}_\mathcal{CD}$ is rotation (roll $\phi$) around $\bm{e}_x^2$ i.e. $\bm{C}_x(\phi)$
+        \end{enumerate}
+        \begin{align*}
+             _\mathcal{A}\bm{\omega}_\mathcal{AD}&=\ 
+            _\mathcal{A}\bm{\omega}_\mathcal{AB}+\ 
+            _\mathcal{A}\bm{\omega}_\mathcal{BC}+\ 
+            _\mathcal{A}\bm{\omega}_\mathcal{CD}\\
+            &=\ _\mathcal{A}\bm{\omega}_\mathcal{AB}+\bm{C}_\mathcal{AB}\ _\mathcal{B}\bm{\omega}_\mathcal{BC}+\bm{C}_\mathcal{AB}\bm{C}_\mathcal{BC}\ _\mathcal{C}\bm{\omega}_\mathcal{CD}\\
+            &=\ _\mathcal{A}\bm{e}_z^\mathcal{A}\dot{\psi}+\bm{C}_\mathcal{AB}\ _\mathcal{B}\bm{e}_y^\mathcal{B}\dot{\theta}+\bm{C}_\mathcal{AB}\bm{C}_\mathcal{BC}\ _\mathcal{C}\bm{e}_x^\mathcal{C}\dot{\phi}\\
+            &=
+            \begin{bmatrix}
+                _\mathcal{A}\bm{e}_z^\mathcal{A} & \bm{C}_\mathcal{AB}\ _\mathcal{B}\bm{e}_y^\mathcal{B} & \bm{C}_\mathcal{AB}\bm{C}_\mathcal{BC}\ _\mathcal{C}\bm{e}_x^\mathcal{C}
+            \end{bmatrix}\dot{\bm{\mathcal{X}}}_R\\
+            &=
+            \begin{bmatrix}
+                _\mathcal{A}\bm{e}_z^\mathcal{A} & \bm{C}_z(\psi)\ _\mathcal{B}\bm{e}_y^\mathcal{B} & \bm{C}_z(\psi)\bm{C}_y(\theta)\ _\mathcal{C}\bm{e}_x^\mathcal{C}
+            \end{bmatrix}\dot{\bm{\mathcal{X}}}_R\\
+        \end{align*}
+        \mathbox{
+            &\bm{E}_{R,\mathrm{Euler,}ZYX}=
+            \begin{bmatrix}
+                0 & -\sin\psi & \cos\psi\cos\theta\\
+                0 & \cos\phi & \sin\phi\cos\theta\\
+                1 & 0 & -\sin\theta                    
+            \end{bmatrix}
+        }
+        \begin{align*}
+            &\bm{E}_{R,\mathrm{Euler,}ZYX}^{-1}=
+            \begin{bmatrix}
+                \frac{\cos\psi \sin\theta}{\cos\theta} & \frac{\sin\theta \sin\psi}{\cos\theta} & 1\\
+                -\sin\psi & \cos\psi & 0\\
+                \frac{\cos\psi}{\cos\theta} & \frac{\sin\psi}{\cos\theta} & 0
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\vfill\null 
+\columnbreak
+
+\begin{whitebox}{\textbf{MORE }$\bm{E}_{R}$}
+    \begin{itemize}
+        \item Angle axis
+        \begin{align*}
+             &\bm{E}_{R,\mathrm{AngleAxis}}=
+            \begin{bmatrix}
+                \bm{n} & \sin(\theta)\mathbb{I}_{3\times3}+(1-\cos\theta)
+                \begin{bmatrix}
+                    \bm{n}
+                \end{bmatrix}_\times
+            \end{bmatrix}\\
+             &\bm{E}_{R,\mathrm{AngleAxis}}^{-1}=
+            \begin{bmatrix}
+                \bm{n}^\top\\
+                -\frac{1}{2}\frac{\sin\theta}{1-\cos\theta}
+                \begin{bmatrix}
+                    \bm{n}
+                \end{bmatrix}_\times^2-\frac{1}{2}
+                \begin{bmatrix}
+                    \bm{n}
+                \end{bmatrix}_\times
+            \end{bmatrix}
+        \end{align*}
+        \item Rotation vector
+        \begin{center}
+            \resizebox{0.95\textwidth}{!}{$
+            \begin{aligned}
+                 &\bm{E}_{R,\mathrm{RotVec}}=
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3}+
+                    \begin{bmatrix}
+                        \bm{\varphi}
+                    \end{bmatrix}_\times\left(\frac{1-\cos||\bm{\varphi}||}{||\bm{\varphi}||^2}\right)+
+                    \begin{bmatrix}
+                        \bm{\varphi}
+                    \end{bmatrix}_\times^2\left(\frac{||\bm{\varphi}||-\sin||\bm{\varphi}||}{||\bm{\varphi}||^3}\right)
+                \end{bmatrix}\\
+                 &\bm{E}_{R,\mathrm{RotVec}}^{-1}=
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3}-\frac{1}{2}
+                    \begin{bmatrix}
+                        \bm{\varphi}
+                    \end{bmatrix}_\times+
+                    \begin{bmatrix}
+                        \bm{\varphi}
+                    \end{bmatrix}_\times^2\frac{1}{||\bm{\varphi}||^2}
+                    \left(1-\frac{||\bm{\varphi}||}{2}\frac{\sin||\bm{\varphi}||}{1-\cos||\bm{\varphi}||}\right)
+                \end{bmatrix}
+                \end{aligned}$}
+        \end{center}
+        \item Quaternion
+        \begin{align*}
+            &\bm{E}_{R,\mathrm{Quat}}=2\bm{H}(\bm{\xi})\Longleftrightarrow\bm{E}_{R,\mathrm{Quat}}^{-1}=\frac{1}{2}\bm{H}(\bm{\xi})^\top
+        \end{align*}
+        \resizebox{0.95\textwidth}{!}{$
+            \begin{aligned}
+                \bm{H}(\bm{\xi})&=
+                \begin{bmatrix}
+                    \color{red}-\check{\bm{\xi}} & 
+                    \begin{bmatrix}
+                        \check{\bm{\xi}}
+                    \end{bmatrix}_\times+\xi_0\mathbb{I}_{3\times 3}\in\mathbb{R}^{3\times4}
+                \end{bmatrix}
+                =
+                \begin{bmatrix}
+                    \color{red}-\xi_1 & \xi_0 & -\xi_3 & \xi_2\\
+                    \color{red}-\xi_2 & \xi_3 & \xi_0 & -\xi_1\\
+                    \color{red}-\xi_3 & -\xi_2 & \xi_1 & \xi_0
+                \end{bmatrix}
+            \end{aligned}$}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ANGULAR VELOCITY FROM PASSIVE ROTATION}}
+    \mathbox{
+        &[_\mathcal{A}\bm{\omega}_\mathcal{AB}]_\times=\dot{\bm{C}}_{\mathcal{AB}}\bm{C}^\top_{\mathcal{AB}}\\
+        &[_\mathcal{A}\bm{\omega}_\mathcal{AB}]_\times=
+        \begin{bmatrix}
+            0 & -\omega_z & \omega_y\\
+            \omega_z & 0 & -\omega_x\\
+            -\omega_y & \omega_x & 0
+        \end{bmatrix},\ _\mathcal{A}\bm{\omega}_\mathcal{AB}=
+        \begin{bmatrix}
+            \omega_x\\
+            \omega_y\\
+            \omega_z
+        \end{bmatrix}
+    }
+\end{whitebox}
+

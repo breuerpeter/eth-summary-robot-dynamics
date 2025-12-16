@@ -1,0 +1,33 @@
+\section{POSITION}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}} % TODO: specify widths to wrap automatically
+    \begin{tabularx}{\columnwidth}{ll}
+        $_\mathcal{A}\bm{r_{BC}}$ & Vector from point $B$ to $C$ (w.r.t. frame $\mathcal{A}$)\\
+        \addlinespace[2pt]
+        $\mathcal{X}_{P,A}$ & Position parameterization of point $A$
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{CARTESIAN SYSTEM}}
+    \begin{itemize}
+        \item Orthonormal basis $\bm{e_x^\mathcal{A}},\bm{e_y^\mathcal{A}},\bm{e_z^\mathcal{A}}$
+        \item Cartesian coordinates $\mathcal{X}_{Pc}=[x,y,z]^\top$
+        \item Position vector $_\mathcal{A}\bm{r}=x\bm{e_x^\mathcal{A}}+y\bm{e_y^\mathcal{A}}+z\bm{e_z^\mathcal{A}}=[x,y,z]^\top$
+	\item Vector addition $_\mathcal{A}\bm{r_{AC}}+\ _\mathcal{A}\bm{r_{AB}}+\ _\mathcal{A}\bm{r_{BC}}$ applies\\
+        \faWarning\ only in Cartesian coordinates
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CYLINDRICAL SYSTEM}}
+    \begin{itemize}
+        \item Cylindrical coordinates $\mathcal{X}_{Pz}=[\rho,\theta,z]^\top$
+        \item Position vector $_\mathcal{A}\bm{r}=[\rho\cos\theta,\rho\sin\theta,z]^\top$
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SPHERICAL SYSTEM}}
+    \begin{itemize}
+        \item Spherical coordinates $\mathcal{X}_{Ps}=[r,\theta,\phi]^\top$
+        \item Position vector $_\mathcal{A}\bm{r}=[r\cos\theta\sin\phi,r\sin\theta\sin\phi,r\cos\phi]^\top$
+    \end{itemize}
+\end{whitebox}

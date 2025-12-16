@@ -1,0 +1,56 @@
+\section{EULER ANGLES}
+
+\begin{whitebox}{\textbf{PROPERTIES}}
+    \begin{itemize}
+        \item 3 parameters (rotation angles)
+        \item Singularity problem: there exists a certain configuration in which there is no longer a conversion between $\omega$ and $\dot{\mathcal{X}}_R$
+        \item Different conventions
+        \begin{itemize}
+            \item Proper Euler angles: $ZXZ, XYX, YZY, ZYZ, XZX, YXY$
+            \begin{itemize}
+                \item Share an axis for the first and last rotation
+            \end{itemize}
+            \item Tait-Bryan angles: $XYZ, YZX, ZXY, XZY, ZYX, YXZ$
+            \begin{itemize}
+                \item Rotations about three distinct axes
+                \item Example: $ZYX$ Tait-Bryan angles $\bm{\chi}_{R,\mathrm{Euler},ZYX}=\begin{bmatrix}z\\y\\x\end{bmatrix}$
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CONVERSION OF $\bm{ZYX}$ TAIT-BRYAN ANGLES}}
+    \begin{itemize}
+        \item $ZYX$ Tait-Bryan angles $\to$ rotation matrix
+        \begin{align*}
+            \bm{C}_\mathcal{AD}&=\bm{C}_\mathcal{AB}(z)\bm{C}_\mathcal{BC}(y)\bm{C}_\mathcal{CD}(x)\\
+            &=\bm{C}_z(z)\bm{C}_y(y)\bm{C}_x(x)\\
+            &=
+            \begin{bmatrix}
+                c_yc_z & c_zs_xs_y-c_xs_z & s_xs_z+c_xc_zs_y\\
+                c_ys_z & c_xc_z+s_xs_ys_z & c_xs_ys_z-c_zs_x\\
+                -s_y & c_ys_x & c_xc_y
+            \end{bmatrix}
+        \end{align*}
+        \item Rotation matrix $\to$ $ZYX$ Tait-Bryan angles
+        \begin{align*}
+            &\bm{C}_\mathcal{AD}=
+            \begin{bmatrix}
+                c_{11} & c_{12} & c_{13}\\
+                c_{21} & c_{22} & c_{23}\\
+                c_{31} & c_{32} & c_{33}
+            \end{bmatrix}\\
+            &\bm{\chi}_{R,\mathrm{Euler},ZYX}=
+            \begin{bmatrix}
+                z\\
+                y\\
+                x\\
+            \end{bmatrix}=
+            \begin{bmatrix}
+                \mathrm{atan2}(c_{21},c_{11})\\
+                \mathrm{atan2}\left(-c_{31},\sqrt{c_{32}^2+c_{33}^2}\right)\\
+                \mathrm{atan2}(c_{32},c_{33})
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}

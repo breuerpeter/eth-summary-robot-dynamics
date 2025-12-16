@@ -1,0 +1,51 @@
+\section{HOMOGENEOUS TRANSFORMATION}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $\bm{T}_\mathcal{AB}$ & Homogeneous transformation from $_\mathcal{B}\bm{r}_{BC}$ to $_\mathcal{A}\bm{r}_{AC}$
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{HOMOGENEOUS TRANSFORMATION}}
+    \begin{itemize}
+        \item Transform a position vector $_\mathcal{B}\bm{r}_{BC}$ to $_\mathcal{A}\bm{r}_{AC}$ using a rotation and translation
+        \begin{align*}
+            _\mathcal{A}\bm{r}_{AC}& =\ _\mathcal{A}\bm{r}_{AB}+\ _\mathcal{A}\bm{r}_{BC}\\
+            & =\ _\mathcal{A}\bm{r}_{AB}+\bm{C}_{\mathcal{AB}}\cdot\ _\mathcal{B}\bm{r}_{BC}
+        \end{align*}
+        \item Combine into a single transformation $\bm{T}_\mathcal{AB}$
+        \mathbox{
+            \begin{bmatrix}
+                _\mathcal{A}\bm{r}_{AC}\\
+                1
+            \end{bmatrix}&=
+            \underbrace{
+            \begin{bmatrix}
+                \bm{C}_{\mathcal{AB}} & _\mathcal{A}\bm{r}_{AB}\\
+                \bm{\mathcal{O}}_{1\times 3} & 1
+            \end{bmatrix}}_{\bm{T}_\mathcal{AB}}
+            \begin{bmatrix}
+                _\mathcal{B}\bm{r}_{BC}\\
+                1
+            \end{bmatrix}
+        }
+    \end{itemize}
+
+\end{whitebox}
+
+\begin{whitebox}{\textbf{PROPERTIES}}
+    \begin{itemize}
+        \item Inverse
+        \begin{align*}
+            \bm{T}^{-1}_{\mathcal{AB}}=
+            \begin{bmatrix}
+                \bm{C}^\top_{\mathcal{AB}} & \overbrace{-\bm{C}^\top_{\mathcal{AB}}\ _\mathcal{A}\bm{r}_{AB}}^{_\mathcal{B}\bm{r}_{BA}}\\
+                \bm{\mathcal{O}}_{1\times 3} & 1
+            \end{bmatrix}
+        \end{align*}
+        \item Concatenation of transformations
+        \begin{align*}
+            \bm{T}_{\mathcal{AC}}=\bm{T}_{\mathcal{AB}}\bm{T}_{\mathcal{BC}}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}

@@ -1,0 +1,484 @@
+\section{DYNAMICS}
+
+\begin{whitebox}{\textbf{DYNAMICS}}
+    \begin{itemize}
+        \item Description of the cause of motion
+        \item Input: torque/force $\bm{\tau}$ acting on system
+        \item Output: motion $\Ddot{\bm{q}}$ of system
+        \item Methods deriving equations of motion (EOM) based on principle of virtual work
+        \begin{itemize}
+            \item Newton-Euler
+            \item Projected Newton-Euler
+            \item Lagrange II
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $dm$ & Infinitesimal mass element on body $\mathcal{B}$\\
+        \addlinespace[2pt]
+        $M$ & Point of particle $dm$\\
+        \addlinespace[2pt]
+        $S$ & Center of gravity (COG) and origin of $\mathcal{B}$\\
+        \addlinespace[2pt]
+        $\mathcal{B}$ & Body containing particles $dm$\\
+        \addlinespace[2pt]
+        $d\bm{F}_\mathrm{ext}$ & Resultant external force acting on $dm$\\
+        \addlinespace[2pt]
+        $\delta W$ & Virtual work\\
+        \addlinespace[2pt]
+        $\delta(\cdot)$ & Virtual quantity\\
+        \addlinespace[2pt]
+        %$\delta\bm{r}$ & Virtual displacement of particle $dm$\\
+        %$\delta\bm{r}_S$ & Virtual displacement of $S$\\
+        %$\delta\bm{\Phi}$ & Virtual angular velocity\\
+        $\bm{v}_M:=\ _\mathcal{I}\dot{\bm{r}}_{IM}$ & Absolute velocity of particle $dm$\\
+        \addlinespace[2pt]
+        $\bm{a}_M:=\ _\mathcal{I}\ddot{\bm{r}}_{IM}$ & Absolute acceleration of particle $dm$\\
+        \addlinespace[2pt]
+        $\bm{\rho}:=\ _\mathcal{I}\bm{r}_{SM}$ & Vector from $S$ to a particle $dm$\\
+        \addlinespace[2pt]
+        $\bm{F}_\mathrm{ext}$ & Resultant external force on $S$\\
+        \addlinespace[2pt]
+        $\bm{T}_\mathrm{ext}$ & Resultant external torque on $\mathcal{B}$ w.r.t $S$\\
+        \addlinespace[2pt]
+        $\bm{p}_S$ & Linear momentum/impulse of $S$\\
+        \addlinespace[2pt]
+        $\bm{N}_S$ & Angular momentum of $S$\\
+        \addlinespace[2pt]
+        $\bm{v}_S:=\ _\mathcal{I}\dot{\bm{r}}_{\mathcal{I}S}$ & Absolute velocity of $S$\\
+        \addlinespace[2pt]
+        $\bm{a}_S:=\ _\mathcal{I}\ddot{\bm{r}}_{\mathcal{I}S}$ & Absolute acceleration of $S$\\
+        \addlinespace[2pt]
+        $\bm{I}_S$ & Inertial tensor of $\mathcal{B}$ w.r.t. $S$\\
+        \addlinespace[2pt]
+        $\bm{\Omega}_\mathcal{B}:=\ _\mathcal{I}\ddot{\bm{r}}_{\mathcal{I}S}$ & Absolute angular velocity of $\mathcal{B}$\\
+        \addlinespace[2pt]
+        $\bm{\Psi}_\mathcal{B}:=\ \dot{\bm{\Omega}}_\mathcal{B}$ & Absolute angular acceleration of $\mathcal{B}$\\
+        \addlinespace[2pt]
+        $n_q$ & Number of generalized coordinates\\
+        \addlinespace[2pt]
+        $n_c$ & Number of contact forces\\
+        \addlinespace[2pt]
+        $n_b$ & Number of bodies in multi-body system\\
+        \addlinespace[2pt]
+        $\bm{M}(\bm{q})\in\mathbb{R}^{n_q\times n_q}$ & Generalized mass matrix\\
+        \addlinespace[2pt]
+        $\bm{b}(\bm{q},\dot{\bm{q}})\in\mathbb{R}^{n_q}$ & Coriolis and centrifugal terms\\
+        \addlinespace[2pt]
+        $\bm{g}(\bm{q})\in\mathbb{R}^{n_q}$ & Gravitational terms\\
+        \addlinespace[2pt]
+        $\bm{\tau}\in\mathbb{R}^{n_q}$ & \makecell[l]{Forces/torques acting in direction\\
+        of generalized coordinates \\ (all $\bm{q}$ assumed actuated)} \\
+        \addlinespace[2pt]
+        $\bm{F_\mathrm{ext}}\in\mathbb{R}^{3n_c}$ & \makecell[l]{External forces acting on system\\ (e.g. contacts)}\\
+        \addlinespace[2pt]
+        $\bm{J_\mathrm{ext}}(\bm{q})\in\mathbb{R}^{3n_c\times n_q}$ & Position Jacobian of external forces\\
+        \addlinespace[2pt]
+        $\mathcal{L}$ & Lagrangian\\
+        \addlinespace[2pt]
+        $\mathcal{T}$ & Kinetic energy\\
+        \addlinespace[2pt]
+        $\mathcal{U}$ & Potential energy
+
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{BODY PROPERTIES}}
+    \begin{itemize}
+        \item Body mass
+        \begin{align*}
+            m:=\int_\mathcal{B}dm
+        \end{align*}
+        \item Center of mass/gravity
+        \begin{align*}
+            \bm{0}:=\int_\mathcal{B}\bm{\rho}dm
+        \end{align*}
+        \item Inertia matrix/inertial tensor around COG
+        \begin{align*}
+            \bm{I}_S:=\int_{\mathcal{B}}-[\bm{\rho}]_{\times}^2 \mathrm{~d} m=\int_{\mathcal{B}}[\bm{\rho}]_{\times}[\bm{\rho}]_{\times}^\top \mathrm{~d} m
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\vfill\null 
+\columnbreak
+
+\begin{whitebox}{\textbf{PRINCIPLE OF VIRTUAL WORK (D'ALEMBERT)}}
+    \begin{itemize}
+        \item Dynamic equilibrium imposes zero virtual work
+        \mathbox{
+        \delta W=\int_\mathcal{B}\delta _\mathcal{I}\bm{r}_{IM}^\top\cdot\left(_\mathcal{I}\ddot{\bm{r}}_{IM}dm-d\bm{F}_\mathrm{ext}\right)=0
+        }
+        \faWarning\ Looking at a single rigid body
+        \item Variational notation with $\delta$ describes, for a fixed instance in time, all possible directions the quantity may move while satisfying applicable constraints
+        \item Quantities
+        \begin{itemize}
+            \item Absolute velocity
+            \begin{align*}
+                _\mathcal{I}\bm{r}_{IM}&=\ _\mathcal{I}\bm{r}_{IS}+\ _\mathcal{I}\bm{r}_{SM}\\
+                _\mathcal{I}\dot{\bm{r}}_{IM}&=\ _\mathcal{I}\dot{\bm{r}}_{IS}+\ _\mathcal{I}\bm{\omega}_\mathcal{IB}\times\ _\mathcal{I}\bm{r}_{SM}\\
+                \Longleftrightarrow\bm{v}_M&=\bm{v}_S+\bm{\Omega}_\mathcal{B}\times\bm{\rho}\\
+                &=
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3} & -
+                    \begin{bmatrix}
+                        \bm{\rho}
+                    \end{bmatrix}_\times
+                \end{bmatrix}
+                \begin{bmatrix}
+                    \bm{v}_S\\
+                    \bm{\Omega}_\mathcal{B}
+                \end{bmatrix}
+            \end{align*}
+            \item Absolute acceleration
+            \begin{align*}
+                _\mathcal{I}\ddot{\bm{r}}_{IM}=\bm{a}_M&=\bm{a}_S+\bm{\Psi}_\mathcal{B}\times\bm{\rho}+\bm{\Omega}_\mathcal{B}\times(\bm{\Omega}_\mathcal{B}\times\bm{\rho})\\
+                &=
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3} & -
+                    \begin{bmatrix}
+                        \bm{\rho}
+                    \end{bmatrix}_\times
+                \end{bmatrix}
+                \begin{bmatrix}
+                    \bm{a}_S\\
+                    \bm{\Psi}_\mathcal{B}
+                \end{bmatrix}+
+                \begin{bmatrix}
+                    \bm{\Omega}_\mathcal{B}
+                \end{bmatrix}_\times
+                \begin{bmatrix}
+                    \bm{\Omega}_\mathcal{B}
+                \end{bmatrix}_\times\bm{\rho}
+            \end{align*}
+            \item Virtual displacement
+            \begin{align*}
+                \delta _\mathcal{I}\bm{r}_{IM}&=\delta _\mathcal{I}\bm{r}_{IS}+\delta_\mathcal{I}\bm{\omega}_\mathcal{IB}\times\bm{\rho}
+                =
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3} & -
+                    \begin{bmatrix}
+                        \bm{\rho}
+                    \end{bmatrix}_\times
+                \end{bmatrix}
+                \begin{bmatrix}
+                \delta_\mathcal{I}\bm{r}_{IS}\\
+                \delta_\mathcal{I}\bm{\omega}_\mathcal{IB}
+                \end{bmatrix}
+            \end{align*}
+        \end{itemize}
+        \item Plug expressions above into D'Alembert's Principle and use body properties as well as $\int_\mathcal{B}\begin{bmatrix}\bm{\rho}\end{bmatrix}_\times d\bm{F}_\mathrm{ext}=\bm{T}_\mathrm{ext}$, etc.
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                \delta W=
+                \begin{bmatrix}
+                    \delta_\mathcal{I}\bm{r}_{IS}\\
+                    \delta_\mathcal{I}\bm{\omega}_\mathcal{IB}
+                \end{bmatrix}^\top\left(
+                \begin{bmatrix}
+                    \mathbb{I}_{3\times3}m & \bm{0}\\
+                    \bm{0} & \bm{I}_S
+                \end{bmatrix}
+                \begin{bmatrix}
+                    \bm{a}_S\\
+                    \bm{\Psi}_\mathcal{B}
+                \end{bmatrix}+
+                \begin{bmatrix}
+                    \bm{0}\\
+                    \begin{bmatrix}
+                        \bm{\Omega}_\mathcal{B}
+                    \end{bmatrix}_\times\bm{I}_S\bm{\Omega}_\mathcal{B}
+                \end{bmatrix}-
+                \begin{bmatrix}
+                    \bm{F}_\mathrm{ext}\\
+                    \bm{T}_\mathrm{ext}
+                \end{bmatrix}\right)=0
+            \end{aligned}$}    
+        \end{center}
+        \item Use the definitions
+        \begin{align*}
+            \bm{p}_S&=m\bm{v}_S\\
+            \bm{N}_S&=\bm{I}_S\bm{\Omega}_\mathcal{B}\\
+            \dot{\bm{p}}_S&=m\bm{a}_S\\
+            \dot{\bm{N}}_S&=\bm{I}_S\bm{\Psi}_\mathcal{B}+\bm{\Omega}_\mathcal{B}\times\bm{I}_S\bm{\Omega}_\mathcal{B}\\
+        \end{align*}
+        \begin{align*}
+             \begin{bmatrix}
+                \delta_\mathcal{I}\bm{r}_{IS}\\
+                \delta_\mathcal{I}\bm{\omega}_\mathcal{IB}
+            \end{bmatrix}^\top
+            \left(
+            \begin{bmatrix}
+                \dot{\bm{p}}_S\\
+                \dot{\bm{N}}_S
+            \end{bmatrix}-
+            \begin{bmatrix}
+                \bm{F}_\mathrm{ext}\\
+                \bm{T}_\mathrm{ext}
+            \end{bmatrix}
+            \right)=0\quad\forall
+            \begin{bmatrix}
+                \delta_\mathcal{I}\bm{r}_{IS}\\
+                \delta_\mathcal{I}\bm{\omega}_\mathcal{IB}
+            \end{bmatrix}_\mathrm{consistent}       
+        \end{align*}
+        \item For a single, free, rigid rigid body (can move in all directions)
+        \mathbox{
+        \dot{\bm{p}}_S&=\bm{F}_\mathrm{ext}\\
+        \dot{\bm{N}}_S&=\bm{T}_\mathrm{ext}
+        }
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{EULER'S LAWS OF MOTION}}
+    \begin{itemize}
+        \item Conservation of linear and angular momentum
+        \mathbox{
+        &\dot{\bm{p}}_S=\sfrac{d}{dt}\left(m\bm{v}_S\right)=m\bm{a}_S=\bm{F}_\mathrm{ext}\\
+        &\dot{\bm{N}}_S=\sfrac{d}{dt}\left(\bm{I}_S\bm{\Omega}_\mathcal{B}\right)=\bm{I}_S\bm{\Psi}_\mathcal{B}+\bm{\Omega}_\mathcal{B}\times\bm{I}_S\bm{\Omega}_\mathcal{B}=\bm{T}_\mathrm{ext}
+        }
+        \faWarning\ Only valid for free rigid bodies (and w.r.t. inertial frame)
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FIXED BASE DYNAMICS}}
+    \mathbox{
+    \bm{M}(\bm{q}) \ddot{\bm{q}}+\bm{b}(\bm{q}, \dot{\bm{q}})+\bm{g}(\bm{q})=\bm{\tau}+\bm{J}_\mathrm{ext}(\bm{q})^\top \bm{F}_\mathrm{ext}
+    }
+\end{whitebox}
+
+\begin{whitebox}{\textbf{NEWTON-EULER METHOD}}
+    \begin{itemize}
+        \item Pros and cons
+        \begin{itemize}
+            \itemPro Intuitively clear and direct access to constraining forces
+            \itemCon Huge combinatorial problem with many bodies
+        \end{itemize}
+        \item Idea
+        \begin{enumerate}
+            \item Free body diagrams of all bodies
+            \item Introduce constraining force at body interfaces
+            \item Apply Euler's laws of motion to individual bodies
+            \item Eliminate the constraining forces
+        \end{enumerate}
+        \item Example: 3D manipulator with $n_j$ 1-DOF joints
+        \begin{itemize}
+            \item $n_j$ moving links with 1 DOF $\implies n_j$ generalized coordinates and $5n_j$ constraining forces/torques
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{PROJECTED NEWTON-EULER METHOD}}
+    \begin{itemize}
+        \item Apply principle of virtual work to a multi-body system (body frames $\mathcal{B}_i$ with COGs $S_i$, $i=1,\dots,n_b$)
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                \sum_{i=1}^{n_b}
+                \begin{bmatrix}
+                    \delta_\mathcal{I}\bm{r}_{IS_i}\\
+                    \delta_\mathcal{I}\bm{\omega}_{\mathcal{IB}_i}
+                \end{bmatrix}^\top
+                \left(
+                \begin{bmatrix}
+                    \Dot{\bm{p}}_{S_i}\\
+                    \Dot{\bm{N}}_{S_i}
+                \end{bmatrix}-
+                \begin{bmatrix}
+                    \bm{F}_{\mathrm{ext},i}\\
+                    \bm{T}_{\mathrm{ext},i}
+                \end{bmatrix}
+                \right)=0\quad\forall
+                \begin{bmatrix}
+                    \delta_\mathcal{I}\bm{r}_{IS_i}\\
+                    \delta_\mathcal{I}\bm{\omega}_{\mathcal{IB}_i}
+                \end{bmatrix}_\mathrm{consistent}
+            \end{aligned}$}    
+        \end{center}
+        \item Express change of impulse and angular momentum in generalized coordinates
+        \begin{itemize}
+            \item Twist and its time derivative
+            \begin{align*}
+                _\mathcal{I}\bm{w}_{S_i}&=
+                \begin{bmatrix}
+                    \bm{v}_{S_i}\\
+                    \bm{\Omega}_\mathcal{B}
+                \end{bmatrix}=
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                    _\mathcal{I}\bm{J}_{0_R,S_i}
+                \end{bmatrix}\dot{\bm{q}}\\
+                _\mathcal{I}\dot{\bm{w}}_{S_i}&=
+                \begin{bmatrix}
+                    \bm{a}_{S_i}\\
+                    \bm{\Psi}_\mathcal{B}
+                \end{bmatrix}=
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                    _\mathcal{I}\bm{J}_{0_R,S_i}
+                \end{bmatrix}\ddot{\bm{q}}+
+                \begin{bmatrix}
+                    _\mathcal{I}\dot{\bm{J}}_{0_P,S_i}\\
+                    _\mathcal{I}\dot{\bm{J}}_{0_R,S_i}
+                \end{bmatrix}\dot{\bm{q}}
+            \end{align*}
+            where $_\mathcal{I}\bm{J}_{0,S_i}$ is the geometric Jacobian of $S_i$
+            \item Impulse and angular momentum time derivatives
+            \begin{flushleft}
+                \resizebox{0.90\textwidth}{!}{$
+                \begin{aligned}
+                    \begin{bmatrix}
+                        \dot{\bm{p}}_{S_i}\\
+                        \dot{\bm{N}}_{S_i}
+                    \end{bmatrix}&=
+                    \begin{bmatrix}
+                        m_i\bm{a}_{S_i}\\
+                        \bm{I}_{S_i}\bm{\Psi}_{\mathcal{B}_i}+\bm{\Omega}_{\mathcal{B}_i}\times\bm{I}_{S_i}\bm{\Omega}_{\mathcal{B}_i}\\
+                    \end{bmatrix}\\
+                    &=\begin{bmatrix}
+                        m_i\ _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                        \bm{I}_{S_i}\ _\mathcal{I}\bm{J}_{0_R,S_i}
+                    \end{bmatrix}\ddot{\bm{q}}+
+                    \begin{bmatrix}
+                        m_i\ _\mathcal{I}\dot{\bm{J}}_{0_P,S_i}\dot{\bm{q}}\\
+                        \bm{I}_{S_i}\ _\mathcal{I}\dot{\bm{J}}_{0_R,S_i}\dot{\bm{q}}+\ _\mathcal{I}\bm{J}_{0_R,S_i}\dot{\bm{q}}\times\bm{I}_{S_i}\ _\mathcal{I}\bm{J}_{0_R,S_i}\dot{\bm{q}}
+                    \end{bmatrix}
+                \end{aligned}$}    
+            \end{flushleft}
+        \end{itemize}
+        \item Express virtual displacements in generalized coordinates
+        \begin{align*}
+            \begin{bmatrix}
+                \delta_\mathcal{I}\bm{r}_{IS_i}\\
+                \delta_\mathcal{I}\bm{\omega}_{\mathcal{IB}_i}
+            \end{bmatrix}=
+            \begin{bmatrix}
+                _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                _\mathcal{I}\bm{J}_{0_R,S_i}
+            \end{bmatrix}\delta\bm{q}
+        \end{align*}
+        \item Plug above expressions into principle of virtual work for a multi-body system
+        \begin{small}
+            \begin{align*}
+                &\delta\bm{q}^\top\Big(\Big.\sum_{i=1}^{n_b}\underbrace{
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                    _\mathcal{I}\bm{J}_{0_R,S_i}
+                \end{bmatrix}^\top
+                \begin{bmatrix}
+                        m_i\ _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                        \bm{I}_{S_i}\ _\mathcal{I}\bm{J}_{0_R,S_i}
+                \end{bmatrix}}_{\bm{M}(\bm{q})}\ddot{\bm{q}}+\hdots\\
+                &\hdots+\underbrace{
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                    _\mathcal{I}\bm{J}_{0_R,S_i}
+                \end{bmatrix}^\top
+                \begin{bmatrix}
+                    m_i\ _\mathcal{I}\dot{\bm{J}}_{0_P,S_i}\dot{\bm{q}}\\
+                    \bm{I}_{S_i}\ _\mathcal{I}\dot{\bm{J}}_{0_R,S_i}\dot{\bm{q}}+\ _\mathcal{I}\bm{J}_{0_R,S_i}\dot{\bm{q}}\times\bm{I}_{S_i}\ _\mathcal{I}\bm{J}_{0_R,S_i}\dot{\bm{q}}
+                \end{bmatrix}}_{\bm{b}(\bm{q},\dot{\bm{q}})}-\hdots\\
+                &\hdots-\underbrace{
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{J}_{0_P,S_i}\\
+                    _\mathcal{I}\bm{J}_{0_R,S_i}
+                \end{bmatrix}^\top
+                \begin{bmatrix}
+                    \bm{F}_{\mathrm{ext},i}\\
+                    \bm{T}_{\mathrm{ext},i}
+                \end{bmatrix}}_{\bm{g}(\bm{q})}
+                \Big.\Big)=0\quad\forall\delta\bm{q}_\mathrm{consistent}
+            \end{align*}
+        \end{small}
+        \item Extract matrices for the equations of motion
+        \begin{itemize}
+            \item Mass matrix
+            \begin{align*}
+                \bm{M}(\bm{q})=\sum_{i=1}^{n_b}\left(_{\color{red}\mathcal{A}}\bm{J}_{0_P,S_i}^\top m_i\ _{\color{red}\mathcal{A}}\bm{J}_{0_P,S_i}+\ _{\color{blue}\mathcal{B}}\bm{J}_{0_R,S_i}^\top\  _{\color{blue}\mathcal{B}}\bm{I}_{S_i}\ _{\color{blue}\mathcal{B}}\bm{J}_{0_R,S_i}\right)
+            \end{align*}
+            \item Coriolis and centrifugal terms
+            \begin{align*}
+                &\bm{b}(\bm{q},\dot{\bm{q}})=\sum_{i=1}^{n_b}\Big(\Big.\ _{\color{red}\mathcal{A}}\bm{J}_{0_P,S_i}^\top m_i\ _{\color{red}\mathcal{A}}\dot{\bm{J}}_{0_P,S_i}\dot{\bm{q}}+\ _{\color{blue}\mathcal{B}}\bm{J}_{0_R,S_i}^\top\cdot\hdots\\
+                &\hdots\cdot\left(_{\color{blue}\mathcal{B}}\bm{I}_{S_i}\ _{\color{blue}\mathcal{B}}\dot{\bm{J}}_{0_R,S_i}\dot{\bm{q}}+\ _{\color{blue}\mathcal{B}}\bm{\Omega}_{\mathcal{B}_i}\times\ _{\color{blue}\mathcal{B}}\bm{I}_{S_i}\ _{\color{blue}\mathcal{B}}\bm{\Omega}_{\mathcal{B}_i}\right)\Big.\Big)
+            \end{align*}
+            \item Gravitational terms
+            % TODO: this is not the same as underbraced expression?!
+            % TODO: what is F_gi?
+            \begin{align*}
+                \bm{g}(\bm{q})=\sum_{i=1}^{n_b}\left(-\ _{\color{red}\mathcal{A}}\bm{J}_{0_P,S_i}^\top\ _{\color{red}\mathcal{A}}\bm{F}_{g_i}\right)
+            \end{align*}
+        \end{itemize}
+        \faWarning\ $\bm{M},\bm{b},\bm{g}$ are in "generalized space" (multiplied with $\bm{q}$) so summation terms can be in different frames ${\color{red}\mathcal{A}},\color{blue}\mathcal{B}$)
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{LAGRANGE II METHOD}}
+    \begin{itemize}
+        \item Lagrangian $\mathcal{L}(\bm{q},\dot{\bm{q}})=\mathcal{T}(\bm{q},\dot{\bm{q}})-\mathcal{U}(\bm{q})$
+        \item Lagrangian equation
+        \mathbox{
+        \frac{d}{dt}\left(\frac{\partial\mathcal{L}}{\partial\dot{\bm{q}}}\right)^\top-\left(\frac{\partial\mathcal{L}}{\partial\bm{q}}\right)^\top=\bm{\tau}\\
+        \Longleftrightarrow\frac{d}{dt}\left(\frac{\partial\mathcal{T}}{\partial\dot{\bm{q}}}\right)^\top-\left(\frac{\partial\mathcal{T}}{\partial\bm{q}}\right)^\top+\left(\frac{\partial\mathcal{U}}{\partial\bm{q}}\right)^\top=\bm{\tau}
+        }
+        \item Kinetic energy
+        \begin{align*}
+            \small
+            T&=\sum_{i=1}^{n_b}\left(\frac{1}{2}m_i\ _{\color{red}\mathcal{A}}\dot{\bm{r}}_{{\color{red}A}S_i}^\top\ _{\color{red}\mathcal{A}}\dot{\bm{r}}_{{\color{red}A}S_i}+\frac{1}{2}\ _{\color{blue}\mathcal{B}}\bm{\Omega}_{\mathcal{B}_i}^\top\ _{\color{blue}\mathcal{B}}\bm{I}_{S_i}\ _{\color{blue}\mathcal{B}}\bm{\Omega}_{\mathcal{B}_i}\right)\\
+            &=\frac{1}{2}\dot{\bm{q}}^\top\sum_{i=1}^{n_b}\left(_{\color{red}\mathcal{A}}\bm{J}_{0_P,S_i}^\top m_i\ _{\color{red}\mathcal{A}}\bm{J}_{0_P,S_i}+\ _{\color{blue}\mathcal{B}}\bm{J}_{0_R,S_i}^\top\  _{\color{blue}\mathcal{B}}\bm{I}_{S_i}\ _{\color{blue}\mathcal{B}}\bm{J}_{0_R,S_i}\right)\dot{\bm{q}}\\
+            &=\frac{1}{2}\dot{\bm{q}}^\top\bm{M}(\bm{q})\dot{\bm{q}}
+        \end{align*}
+        \item Potential energy
+        \begin{itemize}
+            \item Gravitational forces
+            \mathbox{
+            &_\mathcal{I}\bm{F}_{g_i}=m_ig\ _\mathcal{I}\bm{e}_g\\
+            &\mathcal{U}_g=-\sum_{i=1}^{n_b}\ _\mathcal{I}\bm{r}_{IS_i}^\top\  _\mathcal{I}\bm{F}_{g_i}
+            }
+            \item Spring forces
+            \begin{minipage}[c]{0.7\linewidth}
+                \mathbox{
+                &\bm{F}_E=k_j\left(||\bm{r}-\bm{r}_0||-d_0\right)\frac{\bm{r}-\bm{r}_0}{||\bm{r}-\bm{r}_0||}\\
+                &\mathcal{U}_{E_j}=\frac{1}{2}k_j\left(d(\bm{q})-d_0\right)^2
+                }
+            \end{minipage}%
+            \begin{minipage}[c]{0.3\linewidth}
+                \includegraphics[width=\textwidth]{media/Spring_Force.drawio.pdf}
+            \end{minipage}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{EXTERNAL FORCES AND TORQUES}}
+    \begin{itemize}
+        \item Generalized force $\bm{\tau}$ (represented in the space of generalized coordinates) can have contributions from:
+        \begin{itemize}
+            \item External forces $\bm{F}_{\mathrm{ext},j}$ acting in points $P_j$
+            \begin{align*}
+                \bm{\tau}_{F,\mathrm{ext}}=\sum_{j=1}^{n_{f,\mathrm{ext}}}\ _\mathcal{A}\bm{J}_{0_P,P_j}^\top\ _\mathcal{A}\bm{F}_{\mathrm{ext},j}\
+            \end{align*}
+            \item External torques $\bm{T}_{\mathrm{ext},k}$ acting on bodies $\mathcal{B}_k$
+            \begin{align*}
+                \bm{\tau}_{T,\mathrm{ext}}=\sum_{k=1}^{n_{m,\mathrm{ext}}}\ _\mathcal{A}\bm{J}_{0_R,\mathcal{B}_k}^\top\ _\mathcal{A}\bm{T}_{\mathrm{ext},k}
+            \end{align*}
+            \item Combined
+            \begin{align*}
+                \bm{\tau}_\mathrm{ext}=\bm{\tau}_{F,\mathrm{ext}}+\bm{\tau}_{T,\mathrm{ext}}
+            \end{align*}
+            \item Actuators
+            \begin{itemize}
+                \item Actuator acting between body links $\mathcal{B}_{k-1}$ and $\mathcal{B}_k$ (in points $B_{k-1}$ and $B_k$, respectively) imposes a force $\bm{F}_{a,k}$ and/or torque $\bm{T}_{a,k}$ on both links equally and in opposite directions
+            \end{itemize}
+            \begin{align*}
+                \bm{\tau}_{a,k}=(_\mathcal{A}\bm{J}_{0_P,B_k}-\ _\mathcal{A}\bm{J}_{0_P,B_{k-1}})^\top\ _\mathcal{A}\bm{F}_{a,k}+\dots\\
+                \dots+(_\mathcal{A}\bm{J}_{0_R,\mathcal{B}_k}-\ _\mathcal{A}\bm{J}_{0_R,\mathcal{B}_{k-1}})^\top\ _\mathcal{A}\bm{T}_{a,k}
+            \end{align*}
+            \item Total
+            \begin{align*}
+                \bm{\tau}=\bm{\tau}_\mathrm{ext}+\sum_{k=1}^{n_A}\bm{\tau}_{a,k}
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}

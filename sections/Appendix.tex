@@ -1,0 +1,61 @@
+\section{APPENDIX}
+
+\begin{align*}
+    \boldsymbol{a}\times\boldsymbol{b}=
+    \begin{bmatrix}
+        \boldsymbol{a}
+    \end{bmatrix}_\times\boldsymbol{b}=\left(
+    \begin{bmatrix}
+        \boldsymbol{b}
+    \end{bmatrix}_\times\right)^\top\boldsymbol{a}=-
+    \begin{bmatrix}
+        \boldsymbol{b}
+    \end{bmatrix}_\times\boldsymbol{a}
+\end{align*}
+
+\begin{align*}
+    \left(
+    \begin{bmatrix}
+        \boldsymbol{a}
+    \end{bmatrix}_\times\right)^\top=-
+    \begin{bmatrix}
+        \boldsymbol{a}_\times
+    \end{bmatrix}
+\end{align*}
+
+\begin{align*}
+    \mathbf{a}=
+    \begin{bmatrix}
+        a_1\\
+        a_2\\
+        a_3
+    \end{bmatrix},\quad
+    \begin{bmatrix}
+        \boldsymbol{a}
+    \end{bmatrix}_\times=
+    \begin{bmatrix}
+        0 & -a_3 & a_2\\
+        a_3 & 0 & -a_1\\
+        -a_2 & a_1 & 0
+    \end{bmatrix}
+\end{align*}
+
+\begin{align*}
+    -\mathbf{a}^\top
+    \begin{bmatrix}
+        \boldsymbol{a}
+    \end{bmatrix}_\times=-(\mathbf{a}\times\mathbf{a})^\top=\mathbf{0}^\top
+\end{align*}
+
+Time derivative of an arbitrary time-dependent vector $\boldsymbol{r}(t)$ w.r.t. two different frames $\mathcal{A,B}$:
+
+\begin{align}
+\label{eq:time_deriv_frames}
+    \frac{d}{dt}\biggr\rvert_\mathcal{A}\boldsymbol{r}(t)=\frac{d}{dt}\biggr\rvert_\mathcal{B}\boldsymbol{r}(t)+\ \boldsymbol{\omega}_\mathcal{AB}\times\boldsymbol{r}(t)  
+\end{align}
+
+Inertial forces (using \cref{eq:time_deriv_frames}):
+\begin{align*}
+    \frac{d^2}{dt^2}\biggr\rvert_\mathcal{A}\boldsymbol{r}(t)&=\left(\frac{d}{dt}\biggr\rvert_\mathcal{B}+\boldsymbol{\omega}_\mathcal{AB}\times\right)^2\boldsymbol{r}(t)\\
+    &=\frac{d^2}{dt^2}\biggr\rvert_\mathcal{B}\boldsymbol{r}(t)+\underbrace{2\boldsymbol{\omega}_\mathcal{AB}\times\frac{d}{dt}\biggr\rvert_\mathcal{B}\boldsymbol{r}(t)}_{\text{Coriolis accel.}}+\underbrace{\boldsymbol{\omega}_\mathcal{AB}\times(\boldsymbol{\omega}_\mathcal{AB}\times\boldsymbol{r})}_{\text{Centrifugal accel.}}
+\end{align*}

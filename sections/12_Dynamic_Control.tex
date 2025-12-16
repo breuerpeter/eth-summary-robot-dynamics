@@ -1,0 +1,415 @@
+\section{DYNAMICS}
+
+\begin{whitebox}{\textbf{CLASSICAL POSITION CONTROL}}
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+    \tikzstyle{sum} = [draw, circle, node distance=1cm]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+    \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+    
+    \scalebox{0.75}{
+    \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+        % nodes
+        \node [input, name=input] {};
+        \node [sum, right of=input] (sum) {};
+        \node [block, right of=sum, align=center, font=\footnotesize] (controller)
+            {High gain\\
+            \textbf{PID controller}};
+        \node [block, right of=controller, align=center, font=\footnotesize, node distance=3.5cm] (system)
+            {\textbf{Actuator}\\
+            (motor \& gear)};
+        \node [block, right of=system, align=center, font=\footnotesize, node distance=3cm] (dynamics)
+            {Dynamics};
+        \node [output, right of=dynamics, node distance=2.5cm] (output) {};
+        \node [block, below of=controller, align=center, font=\footnotesize, node distance=1.5cm] (measurements)
+            {Position\\
+            sensor};
+        % arrows
+        \draw [->] (controller) -- node {$U,I$} (system);
+        \draw [->] (input) -- node {$\bm{q}^*,\dot{\bm{q}}^*$} (sum);
+        \draw [->] (sum) -- node {} (controller);
+        \draw [->] (system) -- node {$\bm{\tau}$} (dynamics);
+        \draw [->] (dynamics) -- node [name=y] {$\bm{q},\dot{\bm{q}},\ddot{\bm{q}}$} (output);
+        \draw [->] (y) |- (measurements);
+        \draw [->] (measurements) -| node[pos=0.99] {$-$} 
+            node [near end] {$\bm{q}$} (sum);
+    \end{tikzpicture}
+    }
+
+    \begin{itemize}
+        \item Joint level position feedback
+        \item High PID gains guarantee good joint level tracking
+        \item Disturbances (load, etc.) are compensated by PID
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{JOINT TORQUE CONTROL}}
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+    \tikzstyle{sum} = [draw, circle, node distance=1cm]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+    \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+    \scalebox{0.73}{
+    \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+        % inputs
+        \coordinate[] (inputQcoord) at ($(controller.south west)!0.75!(controller.north west)$);
+        \coordinate[] (inputTcoord) at ($(controller.south west)!0.25!(controller.north west)$);
+        % nodes
+        \node [sum, left = of inputQcoord, node distance=2cm] (sumQ) {};
+        \node [sum, left = 0.5 of inputTcoord] (sumT) {};
+        \node [block, right of=sum, align=center, font=\footnotesize] (controller)
+            {High gain\\
+            \textbf{PID controller}};
+        \node [block, right of=controller, align=center, font=\footnotesize, node distance=3.5cm] (system)
+            {\textbf{Actuator}\\
+            (motor \& gear)};
+        \node [block, right of=system, align=center, font=\footnotesize, node distance=3cm] (dynamics)
+            {Dynamics};
+        \node [output, right of=dynamics, node distance=2.5cm] (output) {};
+        \node [block, below of=controller, align=center, font=\footnotesize, node distance=3cm] (pos_sensor)
+            {Position\\sensor};
+        \node [block, below of=system,, align=center, font=\footnotesize, node distance=1.5cm] (torque_sensor)
+            {Torque\\sensor};
+        % arrows
+        \draw[draw, <-] (sumQ) -- ++(-1.2, 0) node[above right]{$\bm{q}^*,\dot{\bm{q}}^*$};
+        \draw[draw, <-] (sumT) -- ++(-1.7, 0) node[above right]{$\bm{\tau}^*$};
+        \draw[->] (sumQ) -- node {} (inputQcoord);
+        \draw[->] (sumT) --  node {} (inputTcoord);
+        \draw [->] (controller) -- node[name=u] {$U,I$} (system);
+        \draw [->] (system) -- node [name=torque] {$\bm{\tau}$} (dynamics);
+        \draw [->] (dynamics) -- node [name=qs] {$\bm{q},\dot{\bm{q}},\ddot{\bm{q}}$} (output);
+        \draw [->] (qs) |- (pos_sensor);
+        \draw [->] (torque) |- (torque_sensor);
+        \draw [->] (pos_sensor) -| node[pos=0.99] {$-$} node [near end] {$\bm{q}$} (sumQ);
+        \draw [->] (torque_sensor) -| node[pos=0.99] {$-$} node [near end] {$\bm{\tau}$} (sumT);
+    \end{tikzpicture}
+    }
+
+    \begin{itemize}
+        \item Active regulation of system dynamics
+        \item Model-based load compensation
+        \item Interaction force control
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{JOINT IMPEDANCE CONTROL}}
+    \begin{itemize}
+        \item Impedance control (PD law for torque)
+        \mathbox{
+            \bm{\tau}^*=\bm{k}_p(\bm{q}^*-\bm{q})+\bm{k}_d(\dot{\bm{q}}^*-\dot{\bm{q}})
+        }
+        \begin{itemize}
+            \item Static conditions: $\dot{\bm{q}}=\ddot{\bm{q}}=0$
+            \begin{align*}
+                \implies\bm{g}(\bm{q})=\bm{\tau}=\bm{k}_p(\bm{q}^*-\bm{q})
+            \end{align*}
+            \item Adding integrator may introduce additional problems
+        \end{itemize}
+        \item Impedance control with gravity compensation
+        \begin{align*}
+            \bm{\tau}^*=\bm{k}_p(\bm{q}^*-\bm{q})+\bm{k}_d(\dot{\bm{q}}^*-\dot{\bm{q}})+\hat{\bm{g}}(\bm{q})
+        \end{align*}
+        \begin{itemize}
+            \item Static conditions: $\dot{\bm{q}}=\ddot{\bm{q}}=0$
+            \begin{align*}
+                \implies\bm{g}(\bm{q})=\bm{\tau}=\bm{k}_p(\bm{q}^*-\bm{q})+\hat{\bm{g}}(\bm{q})
+            \end{align*}
+        \end{itemize}
+        \item Configuration dependent load causes control performance reduction (the inertia seen at each joint varies with the robot configuration, so PD gains are selected for some average configuration)
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{JOINT-SPACE INVERSE DYNAMICS CONTROL}}
+    \begin{itemize}
+        \item Inverse dynamics control (PD law for acceleration)
+        \mathbox{
+            \ddot{\bm{q}}^*&=\bm{k}_p(\bm{q}^*-\bm{q})+\bm{k}_d(\dot{\bm{q}}^*-\dot{\bm{q}})\\
+            \bm{\tau}^*&=\hat{\bm{M}}(\bm{q})\ddot{\bm{q}}^*+\hat{\bm{b}}(\bm{q},\dot{\bm{q}})+\hat{\bm{g}}(\bm{q})
+        }
+        \begin{itemize}
+            \item Can achieve great performance
+            \item Requires accurate modeling
+        \end{itemize}
+        \item Perfect model case: $\hat{\bm{M}}=\bm{M}$, $\hat{\bm{b}}=\bm{b}$, $\hat{\bm{g}}=\bm{g}$
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                &\bm{M}(\bm{q})\ddot{\bm{q}}+\bm{b}(\bm{q},\dot{\bm{q}})+\bm{g}(\bm{q})=\bm{\tau}^*=\hat{\bm{M}}(\bm{q})\ddot{\bm{q}}^*+\hat{\bm{b}}(\bm{q},\dot{\bm{q}})+\hat{\bm{g}}(\bm{q})\\
+                &\implies \ddot{\bm{q}}=\ddot{\bm{q}}^*=\bm{k}_p(\bm{q}^*-\bm{q})+\bm{k}_d(\dot{\bm{q}}^*-\dot{\bm{q}})
+            \end{aligned}$}    
+        \end{center}
+        \begin{itemize}
+            \item Every joint behaves like a decoupled mass spring damper with unitary mass
+            \begin{itemize}
+                \item Eigenfrequency (natural frequency) $\omega=\sqrt{k_p}$
+                \item Dimensionless damping $D=\frac{k_d}{2\sqrt{k_p}}$
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{TASK-SPACE DYNAMICS CONTROL}}
+    \begin{itemize}
+        \item Motivation: motion in joint space often hard to describe
+        \item Single task
+        \begin{itemize}
+            \item Inverse dynamics formulation
+            \begin{align*}
+                &\dot{\bm{w}}_1^*=
+                \begin{bmatrix}
+                    \ddot{r}_1^*\\
+                    \dot{\omega}_1^*
+                \end{bmatrix}=\frac{d}{dt}(\bm{J}_{0,1}\dot{\bm{q}}^*)=\bm{J}_{0,1}\ddot{\bm{q}}^*+\dot{\bm{J}}_1\dot{\bm{q}}^*\\
+                &\implies\ddot{\bm{q}}^*=\bm{J}_{0,1}^\dagger\left(\dot{\bm{w}}_1^*-\dot{\bm{J}}_1\dot{\bm{q}}^*\right)
+            \end{align*}
+            \item Quadratic optimization (QP) formulation
+            \begin{itemize}
+                \item Tasks to fulfill
+                \begin{align*}
+                    &\bm{\tau}=\bm{M}\ddot{\bm{q}}+\bm{b}+\bm{g}\\
+                    &\dot{\bm{w}}_e^*=\bm{J}_{0,e}\ddot{\bm{q}}+\dot{\bm{J}}_{0,e}\dot{\bm{q}}
+                \end{align*}
+                \item Minimize for $\ddot{\bm{q}}$ and $\bm{\tau}$
+                \begin{align*}
+                    &\arg\min_{\ddot{\bm{q}},\bm{\tau}}\left|\left|
+                    \begin{bmatrix}
+                        \bm{J}_{0,e} & 0
+                    \end{bmatrix}
+                    \begin{bmatrix}
+                        \ddot{\bm{q}}\\
+                        \bm{\tau}
+                    \end{bmatrix}-(\dot{\bm{w}}_e^*-\dot{\bm{J}}_{0,e}\dot{\bm{q}})
+                    \right|\right|_2\\
+                    &\mathrm{subject\ to\ }
+                    \begin{bmatrix}
+                        \bm{M} & -\mathbb{I}
+                    \end{bmatrix}
+                    \begin{bmatrix}
+                        \ddot{\bm{q}}\\
+                        \bm{\tau}
+                    \end{bmatrix}+\bm{b}+\bm{g}=\bm{0}
+                \end{align*}
+            \end{itemize}
+        \end{itemize}
+        \item Multiple tasks
+        \begin{itemize}
+            \item Equal priorities
+            \begin{align*}
+                \ddot{\bm{q}}^*=
+                \begin{bmatrix}
+                    \bm{J}_1\\
+                    \vdots\\
+                    \bm{J}_{n_t}
+                \end{bmatrix}^\dagger\left(
+                \begin{bmatrix}
+                    \dot{\bm{w}}_1^*\\
+                    \vdots\\
+                    \dot{\bm{w}}_{n_t}^*
+                \end{bmatrix}-
+                \begin{bmatrix}
+                    \dot{\bm{J}}_1\\
+                    \vdots\\
+                    \dot{\bm{J}}_{n_t}
+                \end{bmatrix}\dot{\bm{q}}\right)
+            \end{align*}
+            \item Prioritization (hierarchical: attempt to fulfill a task as best as possible only if the next higher priority task is fulfilled)
+            \begin{align*}
+                \ddot{\bm{q}}^*=\sum_{i=1}^{n_t}\bm{N}_i\ddot{\bm{q}}_i,\quad
+                \ddot{\bm{q}}_i=(\bm{J}_i\bm{N}_i)^\dagger\left(\dot{\bm{w}}_i^*-\dot{\bm{J}}_i\dot{\bm{q}}-\bm{J}\sum_{k=1}^{i-1}\bm{N}_k\dot{\bm{q}}_k\right)
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{END-EFFECTOR DYNAMICS}}
+    \begin{itemize}
+        \item End-effector dynamics
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                &\ddot{\bm{q}}=\bm{M}^{-1}(\bm{\tau}-\bm{b}-\bm{g})\\
+                &\dot{\bm{w}}_e^*=\bm{J}_{0,e}\ddot{\bm{q}}+\dot{\bm{J}_{0,e}}\dot{\bm{q}}\\
+                \implies&\dot{\bm{w}}_e=\bm{J}_{0,e}\bm{M}^{-1}(\bm{\tau}-\bm{b}-\bm{g})+\dot{\bm{J}}_{0,e}\dot{\bm{q}}\\
+                \implies&\dot{\bm{w}}_e=\bm{J}_{0,e}\bm{M}^{-1}(\bm{J}_{0,e}^\top\bm{F}_e-\bm{b}-\bm{g})+\dot{\bm{J}}_{0,e}\dot{\bm{q}}\\
+                \implies&\dot{\bm{w}}_e-\dot{\bm{J}}_{0,e}\dot{\bm{q}}+\bm{J}_{0,e}\bm{M}^{-1}\bm{b}+\bm{J}_{0,e}\bm{M}^{-1}\bm{g}=\bm{J}_{0,e}\bm{M}^{-1}\bm{J}_{0,e}^\top\bm{F}_e\\
+                \implies&\left(\bm{J}_{0,e}\bm{M}^{-1}\bm{J}_{0,e}^\top\right)^{-1}\left(\dot{\bm{w}}_e-\dot{\bm{J}}_{0,e}\dot{\bm{q}}+\bm{J}_{0,e}\bm{M}^{-1}\bm{b}+\bm{J}_{0,e}\bm{M}^{-1}\bm{g}\right)=\bm{F}_e
+            \end{aligned}$}    
+        \end{center}
+        \mathbox{
+            \bm{\Lambda}\dot{\bm{w}}_e+\bm{\mu}+\bm{p}=\bm{F}_e
+        }
+        where
+        \mathbox{
+            \bm{\Lambda}&=\left(\bm{J}_{0,e}\bm{M}^{-1}\bm{J}_{0,e}^\top\right)^{-1}\\
+            \bm{\mu}&=\bm{\Lambda}\bm{J}_{0,e}\bm{M}^{-1}\bm{b}-\bm{\Lambda}\dot{\bm{J}}_{0,e}\dot{\bm{q}}\\
+            \bm{p}&=\bm{\Lambda}\bm{J}_{0,e}\bm{M}^{-1}\bm{g}
+        }
+        \faWarning\ $\bm{F}_e$ acts on system
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{END-EFFECTOR MOTION CONTROL}}
+    \begin{itemize}
+        \item Desired end-effector acceleration
+        \begin{align*}
+            \dot{\bm{w}}_e^*=\bm{k}_p
+            \begin{bmatrix}
+                \bm{r}_e^*-\bm{r}_e\\
+                \Delta\bm{\varphi}_e
+            \end{bmatrix}+\bm{k}_d(\bm{w}_e^*-\bm{w}_e)+\dot{\bm{w}}_{e,\mathrm{ff}}(t)
+        \end{align*}
+        where $\Delta\bm{\varphi}_e\approx\bm{E}_R(\bm{\mathcal{X}}_{R,e}^*-\bm{\mathcal{X}}_{R,e})$ (for small errors) is the end-effector rotation error and $\dot{\bm{w}}_{e,\mathrm{ff}}(t)$ is trajectory control feedforward term
+        \item End-effector dynamics give corresponding joint torque
+        \begin{align*}
+            \bm{\tau}^*=\hat{\bm{J}}_e^\top\bm{F}_e=\hat{\bm{J}}_e^\top\left(\hat{\bm{\Lambda}}_e\dot{\bm{w}}_e^*+\hat{\bm{\mu}}+\hat{\bm{p}}\right)+\bm{N}(\bm{J}_{0,e}^\top)\bm{\tau}_0
+        \end{align*}
+        where
+        \begin{align*}
+            \bm{N}(\bm{J}_{0,e}^\top)=\left(\mathbb{I}-\bm{J}_{0,e}^\top(\bm{J}_{0,e}\bm{M}^{-1}\bm{J}_{0,e}^\top)^{-1}\bm{J}_{0,e}\bm{M}^{-1}\right)
+        \end{align*}
+        is the null space projection of the transposed geometric end-effector Jacobian (if the torque is applied in the nullspace, the end-effector acceleration does not change)
+        \item Substitute $\bm{\tau}^*$ back into dynamics equation, assume $\bm{\tau}_0=\bm{0}$ and use the definition of $\bm{\Lambda}$
+        \begin{align*}
+            \ddot{\bm{q}}&=\bm{M}^{-1}(\bm{\tau}^*-\bm{b}-\bm{g})\\
+            &=\bm{M}^{-1}\left(\hat{\bm{J}}_e^\top\left(\hat{\bm{\Lambda}}_e\dot{\bm{w}}_e^*+\hat{\bm{\mu}}+\hat{\bm{p}}\right)-\bm{b}-\bm{g}\right)\\
+            &=\bm{M}^{-1}\left(\hat{\bm{J}}_e^\top\left(\left(\bm{J}_{0,e}\bm{M}^{-1}\bm{J}_{0,e}^\top\right)^{-1}\dot{\bm{w}}_e^*+\hat{\bm{\mu}}+\hat{\bm{p}}\right)-\bm{b}-\bm{g}\right)
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+%\begin{whitebox}{\textbf{BIG PICTURE}}
+    % TODO: 23HS Lecture 6 slide 20
+%\end{whitebox}
+
+\begin{whitebox}{\textbf{OPERATIONAL SPACE CONTROL}}
+    \begin{itemize}
+        \item Extend end-effector dynamics with contact force
+        \begin{align*}
+            \bm{\Lambda}&\dot{\bm{w}}_e+\bm{\mu}+\bm{p}+\bm{F}_c=\bm{F}_e
+        \end{align*}
+        \begin{itemize}
+            \item $\bm{F}_c$ acts on surface i.e. is executed by robot
+        \end{itemize}
+        \item Introduce selection matrices $\bm{S}_{M,F}$ (in inertial frame) to separate motion and force directions
+        \begin{align*}
+            \bm{\tau}^*=\hat{\bm{J}}_e^\top\left(\hat{\bm{\Lambda}}_e\bm{S}_M\dot{\bm{w}}_e^*+\bm{S}_F\bm{F}_c^*+\hat{\bm{\mu}}+\hat{\bm{p}}\right)
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SELECTION MATRICES}}
+    \begin{itemize}
+        \item Selection matrices ensure that incompatible force and motion components are removed (if motions already compatible then they have no effect)
+        \item Selection matrices $\bm{\Sigma}_{M,F}$ in end-effector frame
+        \begin{align*}
+            \bm{\Sigma}_{M,F}=
+            \begin{bmatrix}
+                \bm{\Sigma}_{(M,F)P} & 0\\
+                0 & \bm{\Sigma}_{(M,F)R}
+            \end{bmatrix}\in\mathbb{R}^{6\times 6}
+        \end{align*}
+        \begin{itemize}
+            \item The 3 diagonal entries of $\bm{\Sigma}_{MP}$ are
+            $
+                \begin{cases}
+                1 & \text{EE can translate}\\
+                0 & \text{EE can apply force}
+                \end{cases}
+            $
+            \item The 3 diagonal entries of $\bm{\Sigma}_{MR}$ are
+            $
+                \begin{cases}
+                1 & \text{EE can rotate}\\
+                0 & \text{EE can apply torque}
+                \end{cases}
+            $
+        \end{itemize}
+        \item $\bm{\Sigma}_{M}$ (for motion control) and $\bm{\Sigma}_{F}$ (for force/torque control) are related through
+        \begin{align*}
+            \bm{\Sigma}_{F(P,R)}=\mathbb{I}-\bm{\Sigma}_{M(P,R)}
+        \end{align*}
+        \item Transform to inertial frame using $\bm{C}$ if $\bm{F}_c^*$ and/or $\dot{\bm{w}}_e^*$ are w.r.t. the inertial frame
+        \begin{align*}
+            \bm{S}_{M,F}=
+            \begin{bmatrix}
+                \bm{C}^\top\bm{\Sigma}_{(M,F)P}\bm{C} & 0\\
+                0 & \bm{C}^\top\bm{\Sigma}_{(M,F)R}\bm{C}
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{GENERAL LEAST SQUARE OPTIMIZATION}}
+    \mathbox{
+        \bm{Ax}-\bm{b}=\bm{0}
+    }
+    \begin{align*}
+        &\Longleftrightarrow\bm{x}=\bm{A}^\dagger\bm{b}\\
+        &\Longleftrightarrow\arg\min_{\bm{x}}||\bm{Ax}-\bm{b}||_2\\
+        &\Longleftrightarrow\min||\bm{x}||_2\mathrm{\ subject\ to\ }\bm{Ax}-\bm{b}=\bm{0}
+    \end{align*}
+    \rule{\textwidth}{0.4pt}
+    \mathbox{
+        \bm{A}_1\bm{x}_1+\bm{A}_2\bm{x}_2-\bm{b}=\bm{0}
+    }
+    \begin{align*}
+        &\Longleftrightarrow
+        \begin{bmatrix}
+            \bm{x}_1\\
+            \bm{x}_2
+        \end{bmatrix}=
+        \begin{bmatrix}
+            \bm{A}_1 & \bm{A}_2
+        \end{bmatrix}^\dagger\bm{b}\\
+        &\Longleftrightarrow\arg\min_{\bm{x}_1,\bm{x}_2}\left|\left|
+        \begin{bmatrix}
+            \bm{A}_1 & \bm{A}_2
+        \end{bmatrix}
+        \begin{bmatrix}
+            \bm{x}_1\\
+            \bm{x}_2
+        \end{bmatrix}-\bm{b}\right|\right|_2\\
+        &\Longleftrightarrow\min\left|\left|
+        \begin{bmatrix}
+            \bm{x}_1\\
+            \bm{x}_2
+        \end{bmatrix}\right|\right|_2\mathrm{\ subject\ to\ }\bm{A}_1\bm{x}_1+\bm{A}_2\bm{x}_2-\bm{b}=0
+    \end{align*}
+    \rule{\textwidth}{0.4pt}
+    \mathbox{
+        &\bm{A}_1\bm{x}-\bm{b}_1=\bm{0}\\
+        &\bm{A}_2\bm{x}-\bm{b}_2=\bm{0}
+    }
+    \begin{itemize}
+        \item Equal priority
+        \begin{align*}
+            &\bm{x}=
+            \begin{bmatrix}
+                \bm{A}_1\\
+                \bm{A}_2
+            \end{bmatrix}^\dagger
+            \begin{bmatrix}
+                \bm{b}_1\\
+                \bm{b}_2
+            \end{bmatrix}\\
+            &\Longleftrightarrow\arg\min_{\bm{x}}\left|\left|
+            \begin{bmatrix}
+                \bm{A}_1\\
+                \bm{A}_2
+            \end{bmatrix}\bm{x}-
+            \begin{bmatrix}
+                \bm{b}_1\\
+                \bm{b}_2
+            \end{bmatrix}\right|\right|_2\\
+            &\Longleftrightarrow\min||\bm{x}||_2\quad\mathrm{subject\ to\ }\bm{A}_1\bm{x}-\bm{b}_1=\bm{0},\ \bm{A}_2\bm{x}-\bm{b}_2=\bm{0}
+        \end{align*}
+        \item Prioritization
+        \begin{align*}
+            &\bm{x}=\bm{A}_1^\dagger \bm{b}_1+\mathcal{N}(\bm{A}_1)\bm{x}_0\\
+            &\bm{A}_2\bm{x}-\bm{b}_2=\bm{A}_2\left(\bm{A}_1^\dagger \bm{b}_1+\mathcal{N}(\bm{A}_1)\bm{x}_0\right)-\bm{b}_2=\bm{0}\\
+            &\bm{x}_0=(\bm{A}_2\mathcal{N}(\bm{A}_1))^\dagger(\bm{b}_2-\bm{A}_2\bm{A}_1^\dagger \bm{b}_1)\\
+            &\Longleftrightarrow\arg\min_{\bm{x}}||\bm{A}_2\bm{x}-\bm{b}_2||_2\quad\mathrm{subject\ to\ }||\bm{A}_1\bm{x}-\bm{b}_1||=\bm{c}_1
+        \end{align*}
+    \end{itemize}
+\end{whitebox}

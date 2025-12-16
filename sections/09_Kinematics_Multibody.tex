@@ -1,0 +1,345 @@
+\section{KINEMATICS OF SYSTEMS OF BODIES}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $\bm{q},\dot{\bm{q}},\ddot{\bm{q}}$ & Generalized position, velocity, acceleration $\in\mathbb{R}^{n_q}$\\
+        \addlinespace[2pt]
+        $\bm{J}_{A,e}$ & Analytical end-effector Jacobian\\
+        \addlinespace[2pt]
+        $_\mathcal{I}\bm{J}_{0,e}$ & Geometric end-effector Jacobian  w.r.t. frame $\mathcal{I}$\\
+        \addlinespace[2pt]
+        $\bm{\mathcal{X}}_e$ & End-effector pose parameterization
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{GENERALIZED ROBOT ARM}}
+    \begin{itemize}
+        \item $n_j$ joints
+        \begin{itemize}
+            \item Revolute (1 DOF)
+            \item Prismatic (1 DOF)
+        \end{itemize}
+        \item $n_l=n_j+1$ links ($n_j$ moving links, 1 fixed link)
+        \item $6n_j-5n_j=n_j=\dim(\bm{q})$ DOFs
+        \begin{itemize}
+            \item Moving links ($n_j$) need 6 parameters
+            \item 1 DOF joints ($n_j$) impose 5 constraints
+            \item Number of DOFs $=$ number of minimal coordinates
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SERIAL KINEMATIC LINKAGES}}
+    \begin{itemize}
+        \item Configuration parameters
+        \begin{itemize}
+            \item Generalized coordinates: a set of scalar parameters $\bm{q}$ that fully specify the robot's configuration (complete, independent, not unique)
+            \begin{align*}
+                \bm{q}=
+                \begin{bmatrix}
+                    q_1\\
+                    \vdots\\
+                    q_{n_j}
+                \end{bmatrix}\in\mathbb{R}^{n_j}
+            \end{align*}
+            \item End-effector configuration parameters: a set of $m$ parameters that fully specify the end-effector position and orientation w.r.t. the inertial frame
+            \begin{align*}
+                &\mathcal{\mathcal{X}}_e=
+                \begin{bmatrix}
+                    \mathcal{\mathcal{X}}_{P,e}\\
+                    \mathcal{\mathcal{X}}_{R,e}
+                \end{bmatrix}=
+                \begin{bmatrix}
+                    \mathcal{X}_1\\
+                    \vdots\\
+                    \mathcal{X}_{m_e}
+                \end{bmatrix}\in\mathbb{R}^{m_e}\\
+                &m_e:=
+                \begin{cases}
+                    3 & \text{robot arm in 2D}\\
+                    6 & \text{robot arm in 3D}
+                \end{cases}
+            \end{align*}
+            \item Task space: independent of the robot
+            \item Operational space coordinates: $m_{e0}$ DOFs of end-effector (independent)
+           \begin{align*}
+                \mathcal{\mathcal{X}}_{e0}=
+                \begin{bmatrix}
+                    \mathcal{\mathcal{X}}_{P,e0}\\
+                    \mathcal{\mathcal{X}}_{R,e0}
+                \end{bmatrix}=
+                \begin{bmatrix}
+                    \mathcal{X}_1\\
+                    \vdots\\
+                    \mathcal{X}_{m_{e0}}
+                \end{bmatrix}\in\mathbb{R}^{m_{e0}}
+                \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FORWARD KINEMATICS}}
+    \begin{itemize}
+        \item End-effector configuration $\bm{\mathcal{X}}_e$ as a function of generalized coordinates $\bm{q}$
+        \begin{align*}
+            \bm{\mathcal{X}}_e=\bm{\mathcal{X}}_e(\bm{q})\in\mathbb{R}^{m_e}
+        \end{align*}
+        \begin{itemize}
+            \item Homogeneous transformation from inertial frame origin to end-effector
+            \begin{align*}
+                \bm{T}_\mathcal{IE}(\bm{q})&=\bm{T}_{\mathcal{I}0}\cdot\left(\prod_{k=1}^{n_j}\bm{T}_{k-1,k}(q_k)\right)\cdot\bm{T}_{n_j\mathcal{E}}\\
+                &=\begin{bmatrix}
+                    \bm{C}_\mathcal{IE}(\bm{q}) & _\mathcal{I}\bm{r}_\mathcal{IE}(\bm{q})\\
+                    \bm{0}_{1\times3} & 1
+                \end{bmatrix}\in\mathbb{R}^{4\times4}
+            \end{align*}
+        \end{itemize}
+        \item Example: planar (2D) robot arm (in $xz$ plane) with $n_j=3$ joints (angles $q_{1-3}$) and $n_l=4$ links (lengths $l_{0-3}$)
+        \begin{align*}
+            \bm{T}_\mathcal{IE}=\bm{T}_{\mathcal{I}0}\bm{T}_{01}(\bm{q}_1,l_0)\bm{T}_{12}(\bm{q}_2,l_1)\bm{T}_{23}(\bm{q}_3,l_2)\bm{T}_{3\mathcal{E}}(l_3)
+        \end{align*}
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                &\bm{\mathcal{X}}_{P,e}(\bm{q})=
+                \begin{bmatrix}
+                    x\\
+                    z
+                \end{bmatrix}=
+                \begin{bmatrix}
+                    l_1\sin q_1+l_2\sin(q_1+q_2)+l_3\sin(q_1+q_2+q_3)\\
+                    l_0+l_1\cos q_1+l_2\cos(q_1+q_2)+l_3\cos(q_1+q_2+q_3)
+                \end{bmatrix}\\
+                &\bm{\mathcal{X}}_{R,e}(\bm{q})=q_1+q_2+q_3
+            \end{aligned}$}    
+        \end{center}
+    \end{itemize}
+\end{whitebox}
+
+\vfill\null 
+\columnbreak
+
+\begin{whitebox}{\textbf{ANALYTICAL JACOBIAN}}
+    \begin{itemize}
+        \item Relates time derivative of configuration parameters $\dot{\bm{\mathcal{X}}_{e}}$ to generalized velocities $\dot{\bm{q}}$
+        \item Depends on parameterization of a point (example: end-effector $e$)
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                \bm{\mathcal{X}}_e+&\delta\bm{\mathcal{X}}_e=\bm{\mathcal{X}}(\bm{q}+\delta\bm{q})=\bm{\mathcal{X}}_e(\bm{q})+\frac{\partial\bm{\mathcal{X}}_e}{\partial\bm{q}}\delta\bm{q}+\mathcal{O}(\delta\bm{q}^2)\\
+                \implies&\delta\bm{\mathcal{X}}_e\approx\underbrace{\frac{\partial\bm{\mathcal{X}}_e}{\partial\bm{q}}}_{\bm{J}_{A,e}(\bm{q})}\delta\bm{q}
+            \end{aligned}$}
+        \end{center}
+        \mathbox{
+            &\dot{\bm{\mathcal{X}}_e}=\bm{J}_{A,e}(\bm{q})\dot{\bm{q}}\\
+            &\bm{J}_{A,e}(\bm{q})=
+            \begin{bmatrix}
+                \frac{\partial\mathcal{X}_{e,1}}{\partial q_1} & \hdots & \frac{\partial\mathcal{X}_{e,1}}{\partial q_{n_j}}\\
+                \vdots & \ddots & \vdots\\
+                \frac{\partial\mathcal{X}_{e,m}}{\partial q_1} & \hdots & \frac{\partial\mathcal{X}_{e,m}}{\partial q_{n_j}}
+            \end{bmatrix}\in\mathbb{R}^{\dim(\dot{\bm{\mathcal{X}}}_e)\times n_q}
+        }
+        \item Mainly used for numeric algorithms
+        \item Decomposition into position and orientation part
+        \begin{align*}
+            \bm{J}_{A,e}=
+            \begin{bmatrix}
+                \bm{J}_{A_P,e}\\
+                \bm{J}_{A_R,e}
+            \end{bmatrix}=
+            \begin{bmatrix}
+                \frac{\partial\bm{\mathcal{X}}_{P,e}}{\partial\bm{q}}\\
+                \frac{\partial\bm{\mathcal{X}}_{R,\mathcal{E}}}{\partial\bm{q}}
+            \end{bmatrix}
+        \end{align*}
+        \item Example: planar (2D) robot arm from earlier
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                &\bm{J}_{A_P,e}(\bm{q})=
+                \begin{bmatrix}
+                    %l_1\cos q_1+l_2\cos(q_1+q_2)+l_3\cos(q_1+q_2+q_3) & l_2\cos(q_1+q_2)+l_3\cos(q_1+q_2+q_3) & l_3\cos(q_1+q_2+q_3)\\
+                    %-l_1\sin q_1-l_2\sin(q_1+q_2)-l_3\sin(q_1+q_2+q_3) & -l_2\sin(q_1+q_2)-l_3\sin(q_1+q_2+q_3) & -l_3\sin(q_1+q_2+q_3)
+                    l_1\cos_1+l_2\cos_{12}+l_3\cos_{123} & l_2\cos_{12}+l_3\cos_{123} & l_3\cos_{123}\\
+                    -l_1\sin_1-l_2\sin_{12}-l_3\sin_{123} & -l_2\sin_{12}-l_3\sin_{123} & -l_3\sin_{123}
+                \end{bmatrix}\\
+                &\bm{J}_{A_R,e}(\bm{q})=
+                \begin{bmatrix}
+                    1 & 1 & 1
+                \end{bmatrix}
+            \end{aligned}$}
+        \end{center}
+    \end{itemize}
+\end{whitebox}
+    
+\begin{whitebox}{\textbf{GEOMETRIC JACOBIAN}}
+    \begin{itemize}
+        \item Relates end-effector twist $_\mathcal{A}\bm{w}_e$ to generalized velocities $\dot{\bm{q}}$
+        \item Independent of parameterization
+        \mathbox{
+            &_\mathcal{A}\bm{w}_e=\ _\mathcal{A}\bm{J}_{0,e}(\bm{q})\dot{\bm{q}}\\
+            &_\mathcal{A}\bm{w}_e=
+            \begin{bmatrix}
+                _\mathcal{A}\dot{\bm{r}}_{AE}\\
+                _\mathcal{A}\bm{\omega}_\mathcal{AE}
+            \end{bmatrix}\in\mathbb{R}^6\\
+            &_\mathcal{A}\bm{J}_{0,e}(\bm{q})\in\mathbb{R}^{6\times n_q}
+        }
+        \item Unique for every robot
+        \item More common than analytical Jacobian
+        \item Algebra:
+        \begin{align*}
+            _\mathcal{A}\bm{w}_C&=\ _\mathcal{A}\bm{w}_B+\ _\mathcal{A}\bm{w}_{BC}\\
+            _\mathcal{A}\bm{J}_{0,C}&=\ _\mathcal{A}\bm{J}_{0,B}+\ _\mathcal{A}\bm{J}_{0,BC}
+        \end{align*}
+        where $_\mathcal{A}\bm{J}_{0,BC}$ is the relative Jacobian from point $B$ to $C$
+        \item Conversion between geometric and analytical Jacobian
+        \begin{align*}
+            &_\mathcal{A}\bm{w}_e=\bm{E}_e(\bm{\mathcal{X}}_e)\dot{\bm{\mathcal{X}}}_e\\
+            &\bm{E}_e(\bm{\mathcal{X}}_e)=
+            \begin{bmatrix}
+                \bm{E}_{P,e}(\bm{\mathcal{X}}_{P,E})\\
+                \bm{E}_{R,e}(\bm{\mathcal{X}}_{R,\mathcal{E}})
+            \end{bmatrix}\\
+        \end{align*}
+        \mathbox{
+            _\mathcal{A}\bm{J}_{0,e}=\ &\bm{E}_e(\bm{\mathcal{X}}_e)\bm{J}_{A,e}(\bm{q})
+        }
+        \item Change of base
+        \begin{align*}
+            _\mathcal{I}\bm{J}_0=\bm{C}_\mathcal{IA}\ _\mathcal{A}\bm{J}_0\ \bm{C}_\mathcal{IA}^\top
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{GEOMETRIC JACOBIAN 2D EXAMPLE}}
+    \begin{itemize}
+        \item 3-link planar arm, in $xy$ plane, end-effector parameterized with Cartesian coordinates
+        \mathbox{
+            _\mathcal{I}\bm{J}_{0,e}=\bm{J}_{A,e},\quad\bm{E}_e=\mathbb{I},\quad\dot{\bm{\mathcal{X}}}_e=\ _\mathcal{I}\bm{w}_e
+        }
+        \begin{enumerate}
+            \item Introduce coordinate frames $0-3$\\ (inertial frame $0\equiv\mathcal{I}$)
+            \item Introduce generalized coordinates $q_{1-3}$
+            \item Determine end-effector position
+            \begin{align*}
+                _\mathcal{I}\bm{r}_{\mathcal{I}E}(\bm{q})=
+                \begin{bmatrix}
+                    l_0+l_1c_1+l_2c_{12}+l_3c_{123}\\
+                    l_1s_1+l_2s_{12}+l_3s_{123}\\
+                    0
+                \end{bmatrix}
+            \end{align*}
+            \item Compute Jacobian
+            \begin{center}
+                \resizebox{0.9\textwidth}{!}{$
+                \begin{aligned}
+                    _\mathcal{I}\bm{J}_{0_P,e}=\bm{J}_{A_P,e}&=\frac{\partial}{\partial\bm{q}}\ _\mathcal{I}\bm{r}_{\mathcal{I}E}(\bm{q})=
+                    \begin{bmatrix}
+                        -l_1s_1-l_2s_{12}-l_3s_{123} & -l_2s_{12}-l_3s_{123} & -l_3s_{123}\\
+                        l_1c_1+l_2c_{12}+l_3c_{123} & l_2c_{12}+l_3c_{123} & l_3c_{123}\\
+                        0 & 0 & 0
+                    \end{bmatrix}
+                \end{aligned}$}
+            \end{center}
+        \end{enumerate}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{GEOMETRIC JACOBIAN DERIVATION}}
+    \begin{itemize}
+        \item Rigid body formulation at a link (body) $k$\\ (frame also denoted using index $k$)
+        \begin{align*}
+            _\mathcal{I}\dot{\bm{r}}_{Ik}&=\ _\mathcal{I}\dot{\bm{r}}_{I(k-1)}+\ _\mathcal{I}\bm{\omega}_{\mathcal{I}(k-1)}\times\ _\mathcal{I}\bm{r}_{(k-1)k}\\
+            \Longleftrightarrow \bm{v}_k&=\bm{v}_{(k-1)}+\bm{\Omega}_{(k-1)}\times\ _\mathcal{I}\bm{r}_{(k-1)k}
+        \end{align*}
+        \item Apply this to all links up to end-effector body $\mathcal{E}$ at index $k=n+1$ with origin $E$, using the property that the base link at index $k=0$ is fixed i.e. $\bm{v}_0=\bm{0}$
+        \begin{align*}
+            _\mathcal{I}\dot{\bm{r}}_{IE}&=\sum_{k=1}^n\ _\mathcal{I}\bm{\omega}_{\mathcal{I}k}\times\ _\mathcal{I}\bm{r}_{k(k+1)}\\
+            \Longleftrightarrow \bm{v}_E&=\sum_{k=1}^n\ \bm{\Omega}_k\times\ _\mathcal{I}\bm{r}_{k(k+1)}
+        \end{align*}
+        \item Angular velocity propagation
+        \begin{align*}
+            _\mathcal{I}\bm{\omega}_{\mathcal{I}k}=\ _\mathcal{I}\bm{\omega}_{\mathcal{I}(k-1)}+\ _\mathcal{I}\bm{\omega}_{(k-1)k}
+        \end{align*}
+        with $_\mathcal{I}\bm{\omega}_{(k-1)k}=\ _\mathcal{I}\bm{n}_k\dot{q}_k$, where $q_k$ is the (1 DOF) joint angle (normal direction $_\mathcal{I}\bm{n}_k$) of link $k$ w.r.t. link $k-1$
+        \begin{align*}
+            \implies_\mathcal{I}\bm{\omega}_{\mathcal{I}k}=\sum_{i=1}^k\ _\mathcal{I}\bm{n}_i\dot{q}_i
+        \end{align*}
+        \item Write in matrix form to get geometric rotation Jacobian
+        \begin{align*}
+            _\mathcal{I}\bm{\omega}_\mathcal{IE}&=\sum_{i=1}^n\ _\mathcal{I}\bm{n}_i\dot{q}_i=\underbrace{
+            \begin{bmatrix}
+                _\mathcal{I}\bm{n}_1 & _\mathcal{I}\bm{n}_2 & \hdots & _\mathcal{I}\bm{n}_n
+            \end{bmatrix}}_{_\mathcal{I}\bm{J}_{0_R,e}}
+            \begin{bmatrix}
+                    \dot{q}_1\\
+                    \dot{q}_2\\
+                    \vdots\\
+                    \dot{q}_n
+                \end{bmatrix}
+        \end{align*}
+        \item End-effector velocity
+        \begin{align*}
+            _\mathcal{I}\dot{\bm{r}}_{IE}&=\sum_{k=1}^n\left(\sum_{i=1}^k\left(_\mathcal{I}\bm{n}_i\dot{q}_i\right)\times\ _\mathcal{I}\bm{r}_{k(k+1)}\right)\\
+            &=\sum_{k=1}^n\ _\mathcal{I}\bm{n}_k\dot{q}_k\times\sum_{i=k}^n\ _\mathcal{I}\bm{r}_{i(i+1)}\\
+            &=\sum_{k=1}^n\ _\mathcal{I}\bm{n}_k\dot{q}_k\times\ _\mathcal{I}\bm{r}_{k(n+1)}
+        \end{align*}
+        \item Write in matrix form to get geometric position Jacobian
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                _\mathcal{I}\dot{\bm{r}}_{IE}&=\sum_{k=1}^n\ _\mathcal{I}\bm{n}_k\dot{q}_k\times\ _\mathcal{I}\bm{r}_{k(n+1)}
+                =\underbrace{
+                \begin{bmatrix}
+                    _\mathcal{I}\bm{n}_1\times\ _\mathcal{I}\bm{r}_{1(n+1)} & \hdots & _\mathcal{I}\bm{n}_n\times\ _\mathcal{I}\bm{r}_{n(n+1)}
+                \end{bmatrix}}_{_\mathcal{I}\bm{J}_{0_P,e}}
+                \begin{bmatrix}
+                    \dot{q}_1\\
+                    \dot{q}_2\\
+                    \vdots\\
+                    \dot{q}_n
+                \end{bmatrix}
+            \end{aligned}$}
+        \end{center}
+        Note: $_\mathcal{I}\bm{n}_k=\bm{C}_{\mathcal{I}(k-1)}\ _{(k-1)}\bm{n}_k$
+        \item Concatenate into the full geometric Jacobian
+        \begin{align*}
+            _\mathcal{I}\bm{J}_{0,e}=
+            \begin{bmatrix}
+                _\mathcal{I}\bm{J}_{0_P,e}\\
+                _\mathcal{I}\bm{J}_{0_R,e}
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{STEPS TO GET GEOMETRIC JACOBIAN}}
+    \begin{enumerate}
+        \item Determine the passive rotation matrices $\bm{C}_{\mathcal{I}k}$ between all links ($k=1,\dots,n$) using concatenations of elementary rotations, recalling that link/frame $k=0\equiv\mathcal{I}$
+        \begin{align*}
+            \bm{C}_{\mathcal{I}k}=\prod_{i=1}^k\bm{C}_{(i-1)i},\ k=0,\dots,n
+        \end{align*}
+        \item Determine the rotation axes $_\mathcal{I}\bm{n}_k$ ($k=1,\dots,n$)
+        \begin{enumerate}
+            \item In local frame i.e. $_{(k-1)}\bm{n}_k$ ($k=1,\dots,n$)
+            \item In inertial frame using transformations from step 1
+            \begin{align*}
+                _\mathcal{I}\bm{n}_k=\bm{C}_{\mathcal{I}(k-1)}\ _{(k-1)}\bm{n}_k,\ k=1,\dots,n
+            \end{align*}
+        \end{enumerate}
+        \item Determine the end-effector position vectors $_\mathcal{I}\bm{r}_{k(n+1)}$
+        \begin{enumerate}
+            \item Determine the position vectors between adjacent frames $_k\bm{r}_{k(k+1)}$ ($k=1,\dots,n$)
+            \item Transform the vectors from (a) into the inertial frame
+            \begin{align*}
+                _\mathcal{I}\bm{r}_{k(k+1)}=\bm{C}_{\mathcal{I}k}\ _k\bm{r}_{k(k+1)},\ k=1,\dots,n
+            \end{align*}
+            \item Add the vectors from (b) to get
+            \begin{align*}
+                _\mathcal{I}\bm{r}_{k(n+1)}=\sum_{i=k}^n\ _\mathcal{I}\bm{r}_{i(i+1)},\ k=1,\dots,n
+            \end{align*}
+        \end{enumerate}
+        \item Determine $_\mathcal{I}\bm{J}_{0_P,e}$ and $_\mathcal{I}\bm{J}_{0_R,e}$ with the matrix definitions
+    \end{enumerate}
+\end{whitebox}

@@ -1,0 +1,153 @@
+\section{UNIT QUATERNIONS}
+
+\begin{whitebox}{\textbf{PROPERTIES}}
+    \begin{itemize}
+        \item 4 parameters $\xi_{0-3}$
+        \item Vector representation:
+            \begin{align*}
+                \bm{\chi}_{R,\mathrm{Quat}}=\bm{\xi}=
+                \begin{bmatrix}
+                    \xi_0\\
+                    \check{\bm{\xi}}
+                \end{bmatrix}
+            \end{align*}
+        \item Unitary constraint: $\xi_0^2+\xi_1^2+\xi_2^2+\xi_3^2=1$
+        \item No singularity problem
+        \item 4D complex number representation:
+        \begin{align*}
+            \bm{\xi}=\xi_0+\xi_1i+\xi_2j+\xi_3k
+        \end{align*}
+        \begin{itemize}
+            \item Real part $\xi_0=\cos\left(\frac{\theta}{2}\right)$
+            \item Imaginary part $\check{\bm{\xi}}=\sin\left(\frac{\theta}{2}\right)\bm{n}=\begin{bmatrix}\xi_1&\xi_2&\xi_3\end{bmatrix}^\top$
+        \end{itemize}
+        \item Inverse $\bm{\xi}^{-1}\equiv\bm{\xi}^*\text{ (conjugate) }\equiv\bar{\bm{\xi}}\equiv\bm{\xi}^\top=\begin{bmatrix}\xi_0\\ -\check{\bm{\xi}}\end{bmatrix}$
+        \item Identity: $\bm{\xi}=\begin{bmatrix}1& 0& 0& 0\end{bmatrix}^\top$
+        \item Double cover: $\bm{\xi}$ and $-\bm{\xi}$ represent the same rotation
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{HAMILTONIAN CONVENTION}}
+    \begin{align*}
+        &\bm{\xi}=\xi_0+\xi_1i+\xi_2j+\xi_3k\\
+        &i^2=j^2=k^2=ijk=-1\\
+        &ij=-ji=-ijk^2=k\\
+        &jk=-kj=i\\
+        &ki=-ik=j        
+    \end{align*}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{CONVERSIONS}}
+    \begin{itemize}
+        \item Rotation matrix $\to$ unit quaternion:
+        \begin{align*}
+            \bm{\chi}_{R,\mathrm{Quat}}=\bm{\xi}_\mathcal{AD}=
+            \begin{bmatrix}
+                \sqrt{c_{11}+c_{22}+c_{33}+1}\\
+                \mathrm{sgn}(c_{32}-c_{23})\sqrt{c_{11}-c_{22}-c_{33}+1}\\
+                \mathrm{sgn}(c_{13}-c_{31})\sqrt{c_{22}-c_{33}-c_{11}+1}\\
+                \mathrm{sgn}(c_{21}-c_{12})\sqrt{c_{33}-c_{11}-c_{22}+1}\\
+            \end{bmatrix}
+        \end{align*}
+        \item Unit quaternion $\to$ rotation matrix:
+        \resizebox{0.95\textwidth}{!}{$
+            \begin{aligned}
+                \bm{C}_\mathcal{AB}&=\mathbb{I}_{3\times3}+2\xi_0
+                \begin{bmatrix}
+                    \check{\bm{\xi}}
+                \end{bmatrix}_\times+2
+                \begin{bmatrix}
+                    \check{\bm{\xi}}
+                \end{bmatrix}_\times^2=(2\xi_0^2-1)\mathbb{I}_{3\times3}+2\xi_0
+                \begin{bmatrix}
+                    \check{\bm{\xi}}
+                \end{bmatrix}_\times+2\check{\bm{\xi}}\check{\bm{\xi}}^\top\\
+                &=
+                \begin{bmatrix}
+                    \xi_0^2+\xi_1^2-\xi_2^2-\xi_3^2 & 2\xi_1\xi_2-2\xi_0\xi_3 & 2\xi_0\xi_2+2\xi_1\xi_3\\
+                    2\xi_0\xi_3+2\xi_1\xi_2 & \xi_0^2-\xi_1^2+\xi_2^2-\xi_3^2 & 2\xi_2\xi_3-2\xi_0\xi_1\\
+                    2\xi_1\xi_3-2\xi_0\xi_2 & 2\xi_0\xi_1+2\xi_2\xi_3 & \xi_0^2-\xi_1^2-\xi_2^2+\xi_3^2
+                \end{bmatrix}
+            \end{aligned}$}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{PRODUCT OF TWO QUATERNIONS}}
+    \begin{align*}
+        \bm{q}\otimes\bm{p}&=(q_0+q_1\bm{i}+q_2\bm{j}+q_3\bm{k})(p_0+p_1\bm{i}+p_2\bm{j}+p_3\bm{k})\\
+        &=\dots={\color{violet}q_0p_0-q_1p_1-q_2p_2-q_3p_3}+\dots\\&\dots+(q_0p_1+q_1p_0+q_2p_3-q_3p_2)\bm{i}+\dots\\&\dots+(q_0p_2-q_1p_3+q_2p_0+q_3p_1)\bm{j}+\dots\\&\dots+(q_0p_3+q_1p_2-q_2p_1+q_3p_0)\bm{k}\\
+        &=
+        \begin{bmatrix}
+            \color{violet}q_0p_0-\check{\bm{q}}^\top\check{\bm{p}}\\
+            q_0\check{\bm{p}}+p_0\check{\bm{q}}+
+            \begin{bmatrix}
+                \check{\bm{q}}
+            \end{bmatrix}_\times\check{\bm{p}}
+        \end{bmatrix}\\
+        &=
+        \begin{bmatrix}
+            \color{blue}q_0 & \color{orange}-q_1 & \color{orange}-q_2 & \color{orange}-q_3\\
+            \color{pink}q_1 & q_0 & \color{red}-q_3 & \color{red}q_2\\
+            \color{pink}q_2 & \color{red}q_3 & q_0 & \color{red}-q_1\\
+            \color{pink}q_3 & \color{red}-q_2 & \color{red}q_1 & q_0
+        \end{bmatrix}
+        \begin{bmatrix}
+            p_0\\
+            p_1\\
+            p_2\\
+            p_3
+        \end{bmatrix}\\
+        &=
+        \underbrace{
+        \begin{bmatrix}
+            \color{blue}q_0 & \color{orange}-\check{\bm{q}}^\top\\
+            \color{pink}\check{\bm{q}} & q_0\mathbb{I}_{3\times3}+
+            \color{red}\begin{bmatrix}
+                \check{\bm{q}}
+            \end{bmatrix}_\times
+        \end{bmatrix}}_{=:\bm{M}_l(\bm{q})\text{ (left matrix of $\bm{q}$)}}\bm{p}=\bm{M}_l(\bm{q})\bm{p}\\
+        &=
+        \begin{bmatrix}
+            \color{blue}p_0 & \color{orange}-p_1 & \color{orange}-p_2 & \color{orange}-p_3\\
+            \color{pink}p_1 & p_0 & \color{red}p_3 & \color{red}-p_2\\
+            \color{pink}p_2 & \color{red}-p_3 & p_0 & \color{red}p_1\\
+            \color{pink}p_3 & \color{red}p_2 & \color{red}-p_1 & p_0
+        \end{bmatrix}
+        \begin{bmatrix}
+            q_0\\
+            q_1\\
+            q_2\\
+            q_3
+        \end{bmatrix}\\
+        &=
+        \underbrace{
+        \begin{bmatrix}
+            \color{blue}p_0 & \color{orange}-\check{\bm{p}}^\top\\
+            \color{pink}\check{\bm{p}} & p_0\mathbb{I}_{3\times3}-
+            \color{red}\begin{bmatrix}
+                \check{\bm{p}}
+            \end{bmatrix}_\times
+        \end{bmatrix}}_{=:\bm{M}_r(\bm{p})\text{ (right matrix of $\bm{p}$)}}\bm{q}=\bm{M}_r(\bm{p})\bm{q}
+    \end{align*}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ROTATING A VECTOR}}
+
+\begin{itemize}
+    \item Pure (imaginary) quaternion $\bm{p}$ of a coordinate vector $_\mathcal{A}\bm{r}$
+    \begin{align*}
+        \bm{p}(_\mathcal{A}\bm{r})=
+        \begin{bmatrix}
+            0\\
+            _\mathcal{A}\bm{r}
+        \end{bmatrix}
+    \end{align*}
+    \item Transform $_\mathcal{A}\bm{r}$ from frame $\mathcal{A}$ to $\mathcal{B}$ with the quaternion $\bm{\xi}_\mathcal{BA}$
+    \mathbox{
+        \bm{p}(_\mathcal{B}\bm{r})&=\bm{\xi}_\mathcal{BA}\otimes\bm{p}(_\mathcal{A}\bm{r})\otimes\bm{\xi}_\mathcal{BA}^\top\\
+        &=\bm{M}_l(\bm{\xi}_\mathcal{BA})\bm{M}_r(\bm{\xi}_\mathcal{BA}^\top)\ \bm{p}(_\mathcal{A}\bm{r})
+    }
+    Note: analogous to $_\mathcal{B}\bm{r}=\bm{C}_\mathcal{BA}\ _\mathcal{A}\bm{r}$
+\end{itemize}
+
+\end{whitebox}

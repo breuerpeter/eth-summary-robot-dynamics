@@ -1,0 +1,291 @@
+\section{FIXED WING UAV MODELING}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $\mathcal{I}$ & Inertial frame with origin $I$\\
+        \addlinespace[2pt]
+        $_\mathcal{B}\bm{v}_a:=\ _\mathcal{B}\dot{\bm{r}}_{IB}$ & Body velocity with components $u,v,w$\\
+        \addlinespace[2pt]
+        $\bm{V}_\infty$ & Free-stream velocity\\
+        \addlinespace[2pt]
+        $V$ & Airspeed\\
+        \addlinespace[2pt]
+        $\mathcal{W}$ & Wind frame\\
+        \addlinespace[2pt]
+        $\alpha$ & Angle of attack\\
+        \addlinespace[2pt]
+        $\beta$ & Sideslip angle\\
+        \addlinespace[2pt]
+        $\phi,\theta,\psi$ & Roll, pitch and yaw angles\\
+        \addlinespace[2pt]
+        $\gamma$ & Flight path angle (horizontal to $_\mathcal{B}\bm{v}_a$)\\
+        \addlinespace[2pt]
+        $\xi$ & Heading angle (North to $_\mathcal{B}\bm{v}_a$)\\
+        \addlinespace[2pt]
+        $\mathcal{X}$ & Course angle (North to $_\mathcal{I}\bm{v}$)\\
+        \addlinespace[2pt]
+        $\bm{v}_w$ & Wind velocity\\
+        \addlinespace[2pt]
+        $_\mathcal{I}\bm{v}:=\ _\mathcal{I}\dot{\bm{r}}_{IB}$ & Ground-based inertial velocity\\
+        & (ground speed)\\
+        \addlinespace[2pt]
+        $\bm{\Theta}$ & Attitude with components $\phi,\theta,\psi$\\
+        \addlinespace[2pt]
+        $\dot{\bm{\Theta}}$ & Angular rates\\
+        \addlinespace[2pt]
+        $\bm{W}$ & Weight force in the COG\\
+        \addlinespace[2pt]
+        $T$ & Thrust force\\
+        \addlinespace[2pt]
+        $\epsilon_T$ & Thrust offset angle\\
+        \addlinespace[2pt]
+        $SF$ & Side force\\
+        \addlinespace[2pt]
+        $L$ & Aircraft lift\\
+        \addlinespace[2pt]
+        $D$ & Aircraft drag\\
+        \addlinespace[2pt]
+        $\rho$ & Air density\\
+        \addlinespace[2pt]
+        $S$ & Surface/planform area\\
+        \addlinespace[2pt]
+        $c_L$ & Aircraft lift coefficient\\
+        \addlinespace[2pt]
+        $c_D$ & Aircraft drag coefficient\\
+        \addlinespace[2pt]
+        $L_m,M_m,N_m$ & Rolling, pitching, yawing moment\\
+        \addlinespace[2pt]
+        $L_{m_T},M_{m_T},N_{m_T}$ & Rolling, pitching, yawing moment\\
+        & due to propulsion\\
+        \addlinespace[2pt]
+        $c_l,c_m,c_n$ & Rolling, pitching, yawing\\
+        & moment coefficient\\
+        \addlinespace[2pt]
+        $b$ & Wing span\\
+        \addlinespace[2pt]
+        $\Bar{c}$ & Mean geometric chord\\
+        \addlinespace[2pt]
+        $\bm{F}_T$ & Resultant thrust force\\
+        \addlinespace[2pt]
+        $SF$ & Side force from side-slip
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{whitebox}{\textbf{MODELING ASSUMPTIONS}}
+    \begin{itemize}
+        \item UAV is rigid, symmetric structure (constant, diagonal $\bm{I}_B$)
+        \item UAV is electric $\implies$ constant mass
+        \item Motor without dynamics of gyroscopic effects
+        \item Simplified aerodynamics
+        \begin{itemize}
+            \item Operation in linear lift domain (no stall)
+            \item Fuselage lift/drag lumped
+            \item No side-slip
+            \item No interference effects (prop wash, etc.)
+        \end{itemize}
+        \item Constant wind $\implies\sfrac{d}{dt}\ _\mathcal{I}\bm{v}_w=0$
+        \item Earth is flat and no effects from Coriolis acceleration i.e. Earth is an inertial (or Galilean) frame
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FICTITIOUS (INERTIAL) FORCES}}
+    \begin{itemize}
+        \item Forces that appear to act on a mass whose motion is described using a non-inertial (rotating/linearly accelerating) frame
+        \item Consequence of the acceleration of the physical object the non-inertial frame is connected to
+        \item Examples: Coriolis and centrifugal force
+    \end{itemize}
+\end{whitebox}
+
+\vfill\null 
+\columnbreak
+
+\begin{whitebox}{\textbf{BODY FRAME $\mathcal{B}$}}
+    \begin{itemize}
+        \item Origin in COG $B$; $x$ forward, $y$ right, $z$ down
+        \item Free-stream velocity $\bm{V}_\infty=-_\mathcal{B}\bm{v}_a$
+        \item Air-mass relative speed (airspeed) $V=\sqrt{u^2+v^2+w^2}$
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{INERTIAL FRAME $\mathcal{I}$}}
+    \begin{itemize}
+        \item North, East, Down (NED)
+        \begin{itemize}
+            \item Northing $N\equiv\bm{e}_x^\mathcal{I}$, Easting $E\equiv\bm{e}_y^\mathcal{I}$, Down $D\equiv\bm{e}_z^\mathcal{I}$
+        \end{itemize}
+        \item Flat Earth assumption
+        \item Origin in start position
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{WIND FRAME $\mathcal{W}$}}
+    \begin{itemize}
+        \item Origin in COG $B$; $\bm{e}_x^\mathcal{W}$ along $_\mathcal{B}\bm{v}_a$ i.e. opposite to $\bm{V}_\infty$
+        \item Angle of attack $\alpha=\arctan\sfrac{w}{u}$
+        \item Sideslip angle $\beta=\arcsin\sfrac{v}{V}$
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{GROUND SPEED}}
+    \begin{align*}
+        _\mathcal{I}\bm{v}&=\bm{C}_\mathcal{IB}\ _\mathcal{B}\bm{v}_a+\ _\mathcal{I}\bm{v}_w=
+        \begin{bmatrix}
+            V\cos\gamma\cos\xi+\ _\mathcal{I}\bm{v}_{w,N}\\
+            V\cos\gamma\sin\xi+\ _\mathcal{I}\bm{v}_{w,E}\\
+            -V\sin\gamma+\ _\mathcal{I}\bm{v}_{w,D}
+        \end{bmatrix}
+    \end{align*}
+    \faWarning\ Measured by GNSS
+\end{whitebox}
+
+\begin{whitebox}{\textbf{NON-AERODYNAMIC FORCES}}
+    \begin{itemize}
+        \item Weight
+        \begin{align*}
+            _\mathcal{I}\bm{W}=mg\ \bm{e}_z^\mathcal{I}
+        \end{align*}
+        \item Thrust of the propeller $T$ offset from $\bm{e}_x^\mathcal{B}$ by angle $\epsilon_T$
+        \begin{align*}
+            _\mathcal{B}\bm{F}_\mathrm{Thrust}=
+            \begin{bmatrix}
+                T\cos\epsilon_T\\
+                0\\
+                -T\sin\epsilon_T
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{AERODYNAMIC FORCES}}
+    \begin{itemize}
+        \item Lift (wing, tail, fuselage contributions lumped)
+        \begin{align*}
+            L=\frac{1}{2}\rho V^2Sc_L,\quad _\mathcal{B}\bm{F}_\mathrm{Lift}=
+            \begin{bmatrix}
+                L\sin\alpha\\
+                0\\
+                -L\cos\alpha
+            \end{bmatrix}\perp\ _\mathcal{B}\bm{v}_a
+        \end{align*}
+        \item Drag (lumped)
+        \begin{align*}
+            D=\frac{1}{2}\rho V^2Sc_D,\quad _\mathcal{B}\bm{F}_\mathrm{Drag}=
+            \begin{bmatrix}
+                -D\cos\alpha\\
+                0\\
+                -D\sin\alpha
+            \end{bmatrix}\parallel\ _\mathcal{B}\bm{v}_a
+        \end{align*}
+        assuming no sideslip
+        \item Side force (assumed zero)
+        \begin{align*}
+            _\mathcal{B}\bm{F}_\mathrm{Side}=SF\bm{e}_y^\mathcal{B}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{AERODYNAMIC MOMENTS}}
+    \begin{itemize}
+        \item Rolling moment
+        \begin{align*}
+            L_m=\frac{1}{2}\rho V^2Sbc_l
+        \end{align*}
+        \begin{itemize}
+            \item Wing span $b$
+        \end{itemize}
+        \item Pitching moment
+        \begin{align*}
+            M_m=\frac{1}{2}\rho V^2S\Bar{c}c_m
+        \end{align*}
+        \begin{itemize}
+            \item Mean geometric chord $\Bar{c}$
+        \end{itemize}
+        \item Yawing moment
+        \begin{align*}
+            N_m=\frac{1}{2}\rho V^2Sbc_n
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{COMPONENT BUILD-UP APPROACH}}
+    \begin{itemize}
+        \item Practical model structure for nominal flight regimes
+        \item Aerodynamic forces and moments built up from both static and dynamic components, summed from each part of the aircraft
+        \item Example: aircraft lift coefficient as 2\textsuperscript{nd} order expansion
+        \begin{align*}
+            c_L&\approx f(\alpha,q,\delta_e)\\
+            &= c_{L_0}+c_{L_\alpha}\alpha+c_{L_{\alpha^2}}\alpha^2+c_{L_q}\hat{q}+c_{L_{\delta_e}}\delta_e+c_{L_{\alpha\delta_e}}\alpha\delta_e
+        \end{align*}
+        where e.g. $c_{L_\alpha}=\sfrac{\partial c_L}{\partial \alpha}$
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{BODY DYNAMICS}}
+    \begin{itemize}
+        \item Translation
+        \mathbox{
+        \frac{1}{m}\ _\mathcal{B}\bm{F}=\ _\mathcal{B}\dot{\bm{v}}_a+\ _\mathcal{B}\bm{\omega}_\mathcal{IB}\times\ _\mathcal{B}\bm{v}_a
+        }
+        \begin{align*}
+            _\mathcal{B}\bm{F}&=\ _\mathcal{B}\bm{F}_\mathrm{Lift}+\ _\mathcal{B}\bm{F}_\mathrm{Drag}+\ _\mathcal{B}\bm{F}_\mathrm{Side}+\ _\mathcal{B}\bm{F}_\mathrm{Thrust}+\bm{C}_\mathcal{BI}\ _\mathcal{I}\bm{W}\\
+            &=
+            \begin{bmatrix}
+                T\cos\epsilon_T-D\cos\alpha+L\sin\alpha-mg\sin\theta\\
+                SF+mg\sin\phi\cos\theta\\
+                -T\sin\epsilon_T-D\sin\alpha-L\cos\alpha+mg\cos\phi\cos\theta
+            \end{bmatrix}
+        \end{align*}
+        \item Rotation
+        \mathbox{
+            \bm{I}_B\ _\mathcal{B}\dot{\bm{\omega}}_\mathcal{IB}+\ _\mathcal{B}\bm{\omega}_\mathcal{IB}\times\bm{I}_B\ _\mathcal{B}\bm{\omega}_\mathcal{IB}=\ _\mathcal{B}\bm{M}
+        }
+        \begin{align*}
+            _\mathcal{B}\bm{M}=
+            \begin{bmatrix}
+                L_m\\
+                M_m\\
+                N_m
+            \end{bmatrix}+
+            \begin{bmatrix}
+                L_{m_T}\\
+                M_{m_T}\\
+                N_{m_T}
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MOMENT OF INERTIA}}
+    \begin{align*}
+        _\mathcal{B}\bm{I}=
+        \begin{bmatrix}
+            I_{xx} & 0 & I_{xz}\\
+            0 & I_{yy} & 0\\
+            I_{xz} & 0 & I_{zz}
+        \end{bmatrix}
+    \end{align*}
+    \begin{itemize}
+        \item Symmetric about $y$
+        \item $I_{xz}$ typically small
+        \item Can be determined in swing tests
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{2D BODY DYNAMICS}}
+    \begin{itemize}
+        \item General
+        \begin{align*}
+            m\dot{V}=T\cos(\alpha+\epsilon_T)-D-mg\sin\gamma\quad & (x)\\
+            m\dot{V}\dot{\gamma}=L+T\sin(\alpha+\epsilon_T)-mg\cos\gamma\quad & (y) 
+        \end{align*}
+        \item Stationary level flight: $T=D,\ L=mg$
+ 
+        \item Stationary gliding flight: $D=mg\sin\gamma,\ L=mg\cos\gamma$
+        \begin{itemize}
+            \item Max. range ("best glide"): $\tan\gamma_{\min}=\left({\left(\sfrac{c_L}{c_D}\right)_{\max}}\right)^{-1}$
+            \item Max. endurance i.e. $(V_\mathrm{sink})_{\min}$ at $(\sfrac{c_L^3}{c_D^2})_{\max}$
+        \end{itemize}
+    \end{itemize}
+
+
+\end{whitebox}

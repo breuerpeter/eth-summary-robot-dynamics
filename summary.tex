@@ -1,0 +1,67 @@
+\documentclass[tikz, tcolorbox]{summary}
+%=================================================================
+\title{Summary}
+\headtitle{ROBOT DYNAMICS -- SUMMARY}
+\author{PETER BREUER}
+
+\usepackage[cmbright]{sfmath}
+
+\usepackage{algpseudocode} % pseudocode
+
+\begin{document}
+
+	% restart page counter
+	\setcounter{page}{1}
+	% reactivate header and footer
+	\pagestyle{plain}
+
+	\begin{multicols*}{3}
+		\LARGE \textbf{\colorbox{black}{\textcolor{white}{ROBOT DYNAMICS}}} \\
+		\normalsize 
+        %\textbf{\colorbox{color2}{\textcolor{white}{\url{URL}}}} \\
+        \textbf{\colorbox{color2}{\textcolor{white}{\href{mailto:pbreuer@ethz.ch}{PBREUER}}}}
+        \blue{Rev: \today}
+        \normalsize
+
+		\input{sections/01_Position}
+        \input{sections/02_Linear_Velocity}
+        \vfill\null 
+        \columnbreak
+        \input{sections/03_Rotation_Matrices}
+        \vfill\null 
+        \columnbreak
+        \input{sections/04_Euler_Angles}
+        \input{sections/05_Angle_Axis}
+        \vfill\null 
+        \columnbreak
+        \input{sections/06_Unit_Quaternions}
+        \vfill\null 
+        \columnbreak
+        \input{sections/07_Homogeneous_Transformation}
+        \input{sections/08_Angular_Velocity}
+        \input{sections/09_Kinematics_Multibody}
+        \input{sections/10_Kinematic_Control}
+        \input{sections/11_Dynamics}
+        \input{sections/12_Dynamic_Control}
+        \input{sections/13_Floating_Base_Dynamics}
+        \input{sections/14_Legged_Robots}
+        \vfill\null 
+        \columnbreak
+        \input{sections/15_ANYmal}
+        \input{sections/16_Rotorcrafts}
+        \vfill\null 
+        \columnbreak
+        \input{sections/17_Quadcopter_Modeling}
+        \input{sections/18_Quadcopter_Control}
+        \input{sections/19_Fixed_Wing_UAV_Modeling}
+        \input{sections/20_Fixed_Wing_UAV_Control}
+
+        %\input{sections/Appendix}
+        
+        %\vfill\null 
+        %\columnbreak
+
+	\end{multicols*}
+	\clearpage
+
+\end{document}

@@ -1,0 +1,283 @@
+\section{LEGGED ROBOTICS}
+
+\begin{whitebox}{\textbf{IDEAL ACTUATOR FOR LEGGED ROBOTICS}}
+    \begin{itemize}
+        \item Ideal torque source (high bandwidth, high accuracy)
+        \item Energy efficiency
+        \item High maximum joint torque
+        \item High maximum joint velocity
+        \item Small size and weight
+        \item Robustness to impacts, etc.
+        \item Large range of motion
+        \item Low price
+        \item User-friendly
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ACTUATION PRINCIPLES}}
+    \begin{itemize}
+    \item High-geared motor with torque sensor
+    \begin{itemize}
+        \itemPro Very compact
+        \itemPro Motor can be operated at high speed
+        \itemCon High reflected inertia
+        \itemCon Low gearbox efficiency
+        \itemCon Impact loads can destroy the gear
+    \end{itemize}
+    \item High-geared motor with serial spring\\ (series elastic actuator)
+    \begin{itemize}
+        \itemPro Very compact
+        \itemPro Precise torque regulation
+        \itemPro Spring decouples actuator and link inertia (robustness as motor inertia is not seen during impact)
+        \itemPro Additional spring dynamics (temporary energy storage and power/speed amplification)
+        \itemCon Low control bandwidth
+    \end{itemize}
+    \begin{center}
+        \includegraphics[width=0.6\textwidth]{media/Series_Elastic_Actuator.png}
+    \end{center}
+    \item Low-geared high-torque motor (pseudo direct drive)
+    \begin{itemize}
+        \itemPro Low reflected inertia due to low gear ratio (impact robust, high speed and power)
+        \itemPro High bandwidth current control (force control)
+        \itemCon Relatively large (hard to integrate)
+    \end{itemize}
+    %\item Inertia $I_\mathrm{total}=I_\mathrm{link}+I_\mathrm{motor}r^2$, where $I_\mathrm{link}$, $I_\mathrm{motor}$, $r$ are the output link inertia, motor inertia, and transmission ratio, respectively
+    \item Hydraulic actuation
+    \begin{itemize}
+        \itemPro High force at small size/weight
+        \itemPro Very rugged
+        \itemPro Pressure sensor provides direct force feedback
+        \itemCon Onboard pump required
+        \itemCon Hard to downscale
+        \itemCon Energetically inefficient
+        \itemCon Can leak
+    \end{itemize}
+    \item Pneumatic muscle actuators
+    \begin{itemize}
+        \itemPro Lightweight
+        \itemPro High maximum contraction force
+        \itemCon Often with off-board pump
+        \itemCon Works only in contraction
+        \itemCon Nonlinear contraction-force-pressure characteristics
+        \itemCon Difficult to control
+        \itemCon Can be quite loud
+    \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{OTHER ACTUATION TYPES}}
+    \begin{itemize}
+        \item New, unconventional actuator types
+        \begin{itemize}
+            \item Shape memory alloy (SMA)
+            \item Electro-Active Polymer (EAP)
+            \item Piezo-electric
+        \end{itemize}
+        \item Open issues
+        \begin{itemize}
+            \item Low output force levels
+            \item Low displacement (strain)
+            \item Need kV power supplies
+            \item Low control bandwidth
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{STATIC VS. DYNAMICS STABILITY}}
+    \begin{itemize}
+        \item Statically stable
+        \begin{itemize}
+            \item Bodyweight supported by at least three legs
+            \item Robot will not fall if all joints stop instantaneously
+            \item Safe, slow and inefficient
+        \end{itemize}
+        \item Dynamic walking
+        \begin{itemize}
+            \item Robot will fall if not continuously moving
+            \item Less than three legs can be in ground contact
+            \item Fast, efficient and demanding for actuation/control
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{KINEMATIC CONTROL}}
+    \begin{itemize}
+        \item High-gain joint position trajectory tracking
+
+        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+        \tikzstyle{sum} = [draw, circle, node distance=1cm]
+        \tikzstyle{input} = [coordinate]
+        \tikzstyle{output} = [coordinate]
+        \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+        \begin{center}
+            \scalebox{0.75}{
+            \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+                % We start by placing the blocks
+                \node [block, align=center] (planner) {\footnotesize Motion\\\footnotesize Planner};
+                \node [input, name=input] {};
+                \node [sum, right of=input, node distance=2.5cm] (sum) {};
+                \node [block, right of=sum, align=center] (controller) {\footnotesize PD/PID position\\\footnotesize controller};
+                \node [block, right of=controller, node distance=3cm, align=center] (dynamics) {\footnotesize Dynamics};
+                % We draw an edge between the controller and system block to 
+                % calculate the coordinate u. We need it to place the measurement block. 
+                \node [output, right of=dynamics, node distance=2.5cm] (output) {};
+                \node [block, below of=controller, align=center, node distance=1.5cm] (measurements) {\footnotesize Sensors};
+                % Once the nodes are placed, connecting them is easy. 
+                \draw [->] (planner) -- node {$\bm{q}^*,\dot{\bm{q}}^*$} (sum);
+                \draw [->] (sum) -- node {} (controller);
+                \draw [->] (controller) -- node {$\bm{\tau}$} (dynamics);
+                \draw [->] (dynamics) -- node [name=y] {$\bm{q},\dot{\bm{q}},\ddot{\bm{q}}$} (output);
+                \draw [->] (y) |- (measurements);
+                \draw [->] (measurements) -| node[pos=0.99] {$-$} node [near end] {$\bm{q},\dot{\bm{q}}$} (sum);
+            \end{tikzpicture}
+            }
+        \end{center}
+        
+        \begin{itemize}
+            \itemCon Performs poorly on unknown terrain
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{JOINT SPACE INVERSE DYNAMICS}}
+    \begin{itemize}
+        \item Low-gain joint control with model compensation
+        
+        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+        \tikzstyle{sum} = [draw, circle, node distance=1cm]
+        \tikzstyle{input} = [coordinate]
+        \tikzstyle{output} = [coordinate]
+        \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+        \begin{center}
+            \scalebox{0.7}{
+            \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+                % We start by placing the blocks
+                \node [block, align=center] (planner) {\footnotesize Motion\\\footnotesize Planner};
+                \node [input, right of =planner] (input) {};
+                \node [sum, right of=input] (sum) {};
+                \node [block, right of=sum, align=center] (controller) {\footnotesize PD/PID position\\\footnotesize controller};
+                \node [block, above of=controller, align=center, node distance=1.5cm] (invdynamics) {\footnotesize Inverse\\\footnotesize dynamics};
+                \node [sum, right of=controller,node distance=2cm] (sum_ff) {};
+                \node [block, right of=sum_ff, align=center] (dynamics) {\footnotesize Dynamics};
+                % We draw an edge between the controller and system block to 
+                % calculate the coordinate u. We need it to place the measurement block. 
+                \node [output, right of=dynamics, node distance=2.5cm] (output) {};
+                \node [block, below of=controller, align=center, node distance=1.5cm] (measurements) {\footnotesize Sensors};
+                % Once the nodes are placed, connecting them is easy. 
+                \draw [->] (planner) -- node [name=u, below] {$\bm{q}^*,\dot{\bm{q}}^*$} (sum);
+                \draw [->] (sum) -- node {} (controller);
+                \draw [->] (controller) -- node {$\bm{\tau}_\mathrm{fb}$} (sum_ff);
+                \draw [->] (sum_ff) -- node {$\bm{\tau}$} (dynamics);
+                \draw [->] (dynamics) -- node [name=y] {$\bm{q},\dot{\bm{q}},\ddot{\bm{q}}$} (output);
+                \draw [->] (u) |- (invdynamics);
+                \draw [->] (invdynamics) -| node [near end] {$\bm{\tau}_\mathrm{ff}$} (sum_ff);
+                \draw [->] (y) |- (measurements);
+                \draw [->] (measurements) -| node[pos=0.99] {$-$} node [near end] {$\bm{q},\dot{\bm{q}}$} (sum);
+            \end{tikzpicture}
+            }
+        \end{center}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{SUPPORT CONSISTENT INVERSE DYNAMICS}}
+    \begin{itemize}
+        \item Joint acceleration from multiple objectives
+        \begin{itemize}
+            \item Track the swing leg (point $F$ on foot)
+            \begin{align*}
+                &_\mathcal{I}\ddot{\bm{r}}_{IF}=\bm{J}_{F_P}\ddot{\bm{q}}+\dot{\bm{J}}_{F_P}\dot{\bm{q}}\\
+                &_\mathcal{I}\ddot{\bm{r}}_{IF}^*=\bm{k}_p(_\mathcal{I}\bm{r}_{IF}^*-\ _\mathcal{I}\bm{r}_{IF})+\bm{k}_d(\dot{\bm{r}}_{IF}^*-\dot{\bm{r}}_{IF})
+            \end{align*}
+            \item Move the base
+            \begin{align*}
+                &\dot{\bm{w}}_B=\bm{J}_B\ddot{\bm{q}}+\dot{\bm{J}}_B\dot{\bm{q}}\\
+                &\dot{\bm{w}}_B^*=\bm{k}_p\left(
+                \begin{bmatrix}
+                    \bm{r}^*\\
+                    \bm{\varphi}^*
+                \end{bmatrix}-
+                \begin{bmatrix}
+                    \bm{r}\\
+                    \bm{\varphi}
+                \end{bmatrix}\right)+k_d(\bm{w}^*-\bm{w})
+            \end{align*}
+            \item Ensure contact constraint
+            \begin{align*}
+                \ddot{\bm{r}}_c=\bm{J}_{c_P}\ddot{\bm{q}}+\dot{\bm{J}}_{c_P}\dot{\bm{q}}=\bm{0}
+            \end{align*}
+        \end{itemize}
+        \item Above tasks impose $3+6+9=18$ constraints $\implies$ fully define (18 DOF) system  motion
+        \item Inverse dynamics control
+        \begin{align*}
+            &\bm{\tau}^*=\left(\hat{\bm{N}}_c^\top\bm{S}^\top\right)^\dagger\hat{\bm{N}}_c^\top\left(\hat{\bm{M}}\dot{\bm{u}}^*+\hat{\bm{b}}+\hat{\bm{g}}\right)\\
+            &\ddot{\bm{q}}^*=
+            \begin{bmatrix}
+                \bm{J}_{F_P}\\
+                \bm{J}_B\\
+                \bm{J}_{c_P}
+            \end{bmatrix}^{-1}
+            \begin{bmatrix}
+                _\mathcal{I}\ddot{\bm{r}}_{IF}^*\\
+                \dot{\bm{w}}_B^*\\
+                \bm{0}
+            \end{bmatrix}-
+            \begin{bmatrix}
+                \dot{\bm{J}}_{F_P}\\
+                \dot{\bm{J}}_B\\
+                \dot{\bm{J}}_{c_P}
+            \end{bmatrix}\dot{\bm{q}}\to\dot{\bm{u}}^*
+        \end{align*}
+        \item Alternative: task-space inverse dynamics control (direcly regulating in task space as sequential QP)
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{LOCOMOTION AS OPTIMIZATION PROBLEM}}
+    \begin{itemize}
+        \item Inverse dynamics as constrained, prioritized optimization
+        \begin{itemize}
+            \item Step 1: move base
+            \begin{align*}
+                \arg\min_{\dot{\bm{q}}}||\dot{\bm{w}}_B^*(t)-\bm{J}_B\ddot{\bm{q}}-\dot{\bm{J}}_B\dot{\bm{q}}||\quad\mathrm{\ subject\ to\ }
+            \end{align*}
+            \begin{center}
+                \begin{tabularx}{\columnwidth}{ll}
+                    $\bm{M}\ddot{\bm{q}}+\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c=\bm{S}^\top\bm{\tau}$ & EoM\\
+                    \addlinespace[2pt]
+                    $\bm{J}_{c_P}\ddot{\bm{q}}+\dot{\bm{J}}_{c_P}\dot{\bm{q}}=\bm{0}$ & Contact constraint\\
+                    \addlinespace[2pt]
+                    $\bm{F}_{c,n_i}>F_{n,\mathrm{min}}$ & Normal contact force\\
+                    \addlinespace[2pt]
+                    $\mu\bm{F}_{c,n_i}>||\bm{F}_{c,t_i}||_2$ & Friction cone\\
+                \end{tabularx}
+            \end{center}
+            
+            \item Step 2: move swing leg
+            \begin{align*}
+                \arg\min_{\dot{\bm{q}}}||_\mathcal{I}\ddot{\bm{r}}_{IF}^*(t)-\bm{J}_{F_P}\ddot{\bm{q}}-\dot{\bm{J}}_{F_P}\dot{\bm{q}}||\quad\mathrm{\ subject\ to\ }
+            \end{align*}
+            \begin{center}
+                \begin{tabularx}{\columnwidth}{ll}
+                    $\dot{\bm{w}}_B^*(t)-\bm{J}_B\ddot{\bm{q}}-\dot{\bm{J}}_B\dot{\bm{q}}=c_1$ & Higher prio unaffected\\
+                    \addlinespace[2pt]
+                    $\bm{M}\ddot{\bm{q}}+\bm{b}+\bm{g}+\bm{J}_c^\top\bm{F}_c=\bm{S}^\top\bm{\tau}$ & EoM\\
+                    \addlinespace[2pt]
+                    $\bm{F}_{c,n_i}>F_{n,\mathrm{min}}$ & Normal contact force\\
+                    \addlinespace[2pt]
+                    $\mu\bm{F}_{c,n_i}>||\bm{F}_{c,t_i}||_2$ & Friction cone\\
+                \end{tabularx}
+            \end{center}            
+            \item Final step: minimize e.g. torque $\bm{\tau}$ or tangential contact forces $\bm{F}_{c,t_i}$ such that all other tasks are still fulfilled
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{STABILITY ANALYSIS THROUGH LIMIT CYCLES}}
+    \begin{itemize}
+        \item Poincaré map $\bm{x}_{k+1}=P(\bm{x}_k)$
+        \item Fix point characterized by $\bm{x}^*=P(\bm{x}^*)$
+        \item Linearization of mapping $\Delta\bm{x}_{k+1}=\frac{\partial P}{\partial\bm{x}}\Delta\bm{x}_k=\bm{\Phi}\Delta\bm{x}_k$
+        \item The system is stable iff all eigenvalues $\lambda_i(\bm{\Phi})<1$
+    \end{itemize}
+\end{whitebox}

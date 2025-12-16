@@ -1,0 +1,673 @@
+\section{QUADCOPTER MODELING}
+
+\begin{yellowbox}{\textbf{NOMENCLATURE}}
+    \begin{tabularx}{\columnwidth}{ll}
+        $\mathcal{E}$ & Inertial (Earth-fixed) frame with origin $E$\\
+        \addlinespace[2pt]
+        $B$ & Center of gravity (COG) of $\mathcal{B}$\\
+        \addlinespace[2pt]
+        $\mathcal{B}$ & Body frame with origin $B$\\
+        \addlinespace[2pt]
+        $\phi,\theta,\psi$ & Roll, pitch and yaw angles\\
+        \addlinespace[2pt]
+        $_\mathcal{B}\bm{\omega}_\mathcal{EB}$ & Angular velocity of $\mathcal{B}$ (body angular rates) w.r.t. $\mathcal{E}$\\
+        & (expressed in $\mathcal{B}$) with components $p,q,r$\\
+        \addlinespace[2pt]
+        $ _\mathcal{B}\dot{\bm{r}}_{EB}$ & Body velocity\\ % TODO: check if u,v,w are actually w.r.t. body frame
+        \addlinespace[2pt]
+        & (expressed in $\mathcal{B}$) with components $u,v,w$\\
+        \addlinespace[2pt]
+        $T_i$ & Propeller thrust forces\\
+        \addlinespace[2pt]
+        $Q_i$ & Propeller drag torques\\
+        \addlinespace[2pt]
+        $\omega_{p,i}$ & Propeller angular rates\\
+        \addlinespace[2pt]
+        $l$ & Arm length\\
+        \addlinespace[2pt]
+        $h$ & Propeller height (from COG to propeller plane)\\
+        \addlinespace[2pt]
+        $m$ & Total mass\\
+        \addlinespace[2pt]
+        $\bm{I}$ & Inertia tensor of $\mathcal{B}$ w.r.t. $B$\\
+        \addlinespace[2pt]
+        $\bm{F}_\mathrm{Aero}$ & Resultant aerodynamic force on $B$\\
+        \addlinespace[2pt]
+        $\bm{F}$ & Resultant force on $B$\\
+        \addlinespace[2pt]
+        $\bm{M}_\mathrm{Aero}$ & Resultant aerodynamic torque on $B$\\
+        \addlinespace[2pt]
+        $\bm{M}$ & Resultant moment/torque on $\mathcal{B}$ w.r.t. $B$\\
+        \addlinespace[2pt]
+        $b$ & Propeller thrust constant\\
+        \addlinespace[2pt]
+        $d$ & Propeller drag constant
+        
+    \end{tabularx}
+\end{yellowbox}
+
+\begin{center}
+    \resizebox{0.8\linewidth}{!}{
+    \includegraphics[]{media/Quadcopter_Diagram.png}
+    }   
+\end{center}
+
+
+\begin{whitebox}{\textbf{MODELING PURPOSES}}
+    \begin{itemize}
+        \item System analysis: model allows evaluating characteristics (stability, controllability, power consumption, etc.) of future aircraft in flight or its behavior in various conditions
+        \item Control law design and simulation: model allows comparing various control techniques and tune their parameters
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MODELING ASSUMPTIONS}}
+    \begin{itemize}
+        \item CoG and body frame origin coincide
+        \item No interaction with ground or other surfaces
+        \item Rigid and symmetric structure
+        \item Rigid propellers
+        \item No fuselage drag
+        \item Frame (body) is symmetric in $xz$- and $yz$-plane (diagonal inertia tensor)
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MODEL COMPONENTS}}
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+    \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+    
+    \scalebox{0.63}{
+    \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+        % nodes
+        \node [input, name=in] {};
+        \node[block, right of=in, align=center, font=\small, text width=1.5cm] (motor)
+        {\textbf{Motor\\Dynamics}};
+        \node[block, align=center, right of=motor, font=\small, node distance=3.5cm, text width=2.5cm] (aero)
+            {\textbf{Aerodynamics}};
+        \node[block, align=center, right of=aero, font=\small, node distance=3.5cm, text width=1.5cm] (dyn)
+            {\textbf{Body\\Dynamics}};
+        \node[block, align=center, right of=dyn, font=\small, node distance=3.5cm, text width=0.5cm] (int)
+            {$\int$};
+        \node [output, name=out, right of=int] {};
+        % arrows
+        \draw[->] (in) -- node {$\bm{\omega}_p^*$} (motor);
+        \draw[->] (motor) -- node {$\bm{\omega}_p$} (aero);
+        \draw[->] (aero) -- node {$\bm{F,M}$} (dyn);
+        \draw[->] (dyn) -- node {$\dot{\bm{v}},\dot{\bm{\omega}}$} (int);
+        \draw[->] (int) -- node {$\bm{v},\bm{\omega}$} (out);
+    \end{tikzpicture}}
+
+    \begin{itemize}
+        \item System input: desired rotor speeds $\bm{\omega}_r^*$ (or the corresponding motor voltage inputs)
+        \item Motor dynamics are very fast and can therefore be neglected for control design
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{ATTITUDE}}
+    \begin{itemize}
+        \item Representation using yaw, pitch, roll Tait-Bryan angles
+    \begin{align*}
+            \bm{C}_\mathcal{EB}&=\bm{C}_{\mathcal{E}1}(\psi)\bm{C}_{12}(\theta)\bm{C}_{2\mathcal{B}}(\phi)\\
+            &=\bm{C}_z(\psi)\bm{C}_y(\theta)\bm{C}_x(\phi)\\
+            &=
+            \begin{bmatrix}
+                c_\theta c_\psi & c_\psi s_\phi s_\theta-c_\phi s_\psi & s_\phi s_\psi+c_\phi c_\psi s_\theta\\
+                c_\theta s_\psi & c_\phi c_\psi+s_\phi s_\theta s_\psi & c_\phi s_\theta s_\psi-c_\psi s_\phi\\
+                -s_\theta & c_\theta s_\phi & c_\phi c_\theta
+            \end{bmatrix}
+        \end{align*}
+        \begin{align*}
+            \bm{C}_\mathcal{BE}=\bm{C}_\mathcal{EB}^\top=
+            \begin{bmatrix}
+                c_\theta c_\psi & c_\theta s_\psi & -s_\theta\\
+                c_\psi s_\phi s_\theta-c_\phi s_\psi & c_\phi c_\psi+s_\phi s_\theta s_\psi & c_\theta s_\phi\\
+                s_\phi s_\psi+c_\phi c_\psi s_\theta & c_\phi s_\theta s_\psi-c_\psi s_\phi & c_\phi c_\theta
+            \end{bmatrix}
+        \end{align*}
+        \item Limits
+        \begin{align*}
+            &\phi\in(-\pi,\pi)\\
+            &\theta\in(-\sfrac{\pi}{2},\sfrac{\pi}{2})\\
+            &\psi\in(-\pi,\pi)
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\vfill\null 
+\columnbreak
+
+\begin{whitebox}{\textbf{ANGULAR VELOCITY}}
+    \begin{itemize}
+        \item Rotation matrix $\bm{C}_\mathcal{EB}$ from $\mathcal{B}$ to $\mathcal{E}$
+            \mathbox{
+                \bm{C}_\mathcal{EB}=\bm{C}_{\mathcal{E}1}(\psi)\bm{C}_{12}(\theta)\bm{C}_{2\mathcal{B}}(\phi)
+            }
+            \begin{enumerate}
+                \item $\bm{C}_{\mathcal{E}1}$ is rotation (yaw $\psi$) around $\bm{e}_z^\mathcal{E}$ $(\bm{C}_z(\psi))$
+                \item $\bm{C}_{12}$ is rotation (pitch $\theta$) around $\bm{e}_y^1$ $(\bm{C}_y(\theta))$
+                \item $\bm{C}_{2\mathcal{B}}$ is rotation (roll $\phi$) around $\bm{e}_x^2$ $(\bm{C}_x(\phi))$
+            \end{enumerate}
+        \item ZYX Tait-Bryan angles (3-2-1 intrinsic Euler angles)
+            \begin{align*}
+                \bm{\Theta}=
+                \begin{bmatrix}
+                    \phi & \theta & \psi
+                \end{bmatrix}^\top
+            \end{align*}
+        \item Relation to angular rates $\dot{\bm{\Theta}}$
+           \begin{align*}
+                \dot{\bm{\Theta}}=
+                \begin{bmatrix}
+                    \Dot{\phi} & \Dot{\theta} & \Dot{\psi}
+                \end{bmatrix}^\top\neq\ 
+                _\mathcal{B}\bm{\omega}_\mathcal{EB}=
+                \begin{bmatrix}
+                    p & q & r
+                \end{bmatrix}^\top
+            \end{align*}
+            \begin{align*}
+                \bm{\omega}_\mathcal{EB}=
+                \bm{\omega}_{\mathcal{E}1}+
+                \bm{\omega}_{12}+
+                \bm{\omega}_{2\mathcal{B}}&=
+                \Dot{\psi}\bm{e}_z^\mathcal{E}+\Dot{\theta}\bm{e}_y^1+\Dot{\phi}\bm{e}_x^2\\
+                &=\Dot{\psi}\bm{e}_z^1+\Dot{\theta}\bm{e}_y^2+\Dot{\phi}\bm{e}_x^\mathcal{B}
+            \end{align*}
+            \begin{align*}
+                _\mathcal{B}\bm{\omega}_\mathcal{EB}&=\Dot{\psi}\bm{C}_{\mathcal{B}1}\bm{e}_z^1+\Dot{\theta}\bm{C}_{\mathcal{B}2}\bm{e}_y^2+\Dot{\phi}\bm{e}_x^\mathcal{B}\\
+                &=\begin{bmatrix}
+                    \bm{e}_x^\mathcal{B} & \bm{C}_{\mathcal{B}2}\bm{e}_y^2 & \bm{C}_{\mathcal{B}1}\bm{e}_z^1
+                \end{bmatrix}\dot{\bm{\Theta}}\\
+                &=\begin{bmatrix}
+                    \bm{e}_x^\mathcal{B} & \bm{C}_x^\top(\phi)\bm{e}_y^2 & \bm{C}_{\mathcal{B}2}\bm{C}_{21}\bm{e}_z^1
+                \end{bmatrix}\dot{\bm{\Theta}}\\
+                &=\begin{bmatrix}
+                    \bm{e}_x^\mathcal{B} & \bm{C}_x^\top(\phi)\bm{e}_y^2 & \bm{C}_x^\top(\phi)\bm{C}_y^\top(\theta)\bm{e}_z^1
+                \end{bmatrix}\dot{\bm{\Theta}}\\
+            \end{align*}
+            \mathbox{
+            _\mathcal{B}\bm{\omega}_\mathcal{EB}=\underbrace{
+            \begin{bmatrix}
+                    1 & 0 & -\sin\theta\\
+                    0 & \cos\phi & \sin\phi\cos\theta\\
+                    0 & -\sin\phi & \cos\phi\cos\theta
+                \end{bmatrix}}_{\bm{E}_{R,\mathrm{Euler,}ZYX}}\dot{\bm{\Theta}}
+            }
+            \begin{itemize}
+                \item Linearization around hover
+                \begin{align*}
+                    \bm{E}_{R,\mathrm{Euler,}ZYX}\Big\rvert_{\phi=\theta=0}=\mathbb{I}_{3\times3}\Longleftrightarrow\dot{\bm{\Theta}}=\ _\mathcal{B}\bm{\omega}_\mathcal{EB}
+                \end{align*}
+                \item Singularity: $\det(\bm{E}_{R,\mathrm{Euler,}ZYX})=-\cos\theta$\\
+                $\implies$ gimbal lock at $\theta=\pm\sfrac{\pi}{2}$
+            \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{UAV DYNAMICS}}
+    \begin{align*}
+        \bm{M}(\bm{q})\ddot{\bm{q}}+\bm{b}(\bm{q},\dot{\bm{q}})+\bm{g}(\bm{q})+\bm{J}_\mathrm{ext}^\top\bm{F}_\mathrm{ext}=\bm{S}^\top\bm{\tau}_\mathrm{act}
+    \end{align*}
+    \begin{center}
+        \begin{tabularx}{\columnwidth}{ll}
+            $\bm{q}$ & Generalized coordinates\\
+            $\bm{M}(\bm{q})$ & Mass matrix\\
+            $\bm{b}(\bm{q},\dot{\bm{q}})$ & Centrifugal and Coriolis forces\\
+            $\bm{g}(\bm{q})$ & Gravity forces\\
+            $\bm{\tau}_\mathrm{act}$ & Actuation torques\\
+            $\bm{S}$ & Selection matrix of actuated joints\\
+            $\bm{F}_\mathrm{ext}$ & External forces (exerted by system)\\
+            $\bm{J}_\mathrm{ext}$ & (Geometric) Jacobian of external forces
+        \end{tabularx}
+    \end{center}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{EQUATION OF FORCES}}
+    \begin{enumerate}
+        \item Conservation of linear momentum
+        \begin{align*}
+            \dot{\bm{p}}_S=\sfrac{d}{dt}\left(m\bm{v}_S\right)=m\bm{a}_S=\bm{F}_\mathrm{ext}
+        \end{align*}
+        \item Modified notation
+        \begin{align*}
+            \dot{\bm{p}}_B=\sfrac{d}{dt}\left(m\dot{\bm{r}}_{EB}\right)=m\ddot{\bm{r}}_{EB}=\bm{F}
+        \end{align*}
+        \item Alternative formulation
+        \begin{align*}
+            \frac{d}{dt}\biggr\rvert_\mathcal{E}(m\dot{\bm{r}}_{EB})=\sum_j\bm{F}_j
+        \end{align*}
+        where subscript $\mathcal{E}$ denotes time differentiation w.r.t. the inertial frame $\mathcal{E}$ and $\dot{\bm{r}}_{EB}$ is the velocity of the COG $B$
+        \item Change of frame gives %(using \cref{eq:time_deriv_frames})
+        \begin{align*}
+            \sum_j\bm{F}_j=\ \frac{d}{dt}\biggr\rvert_\mathcal{B}(m\dot{\bm{r}}_{EB})+\bm{\omega}_\mathcal{EB}\times(m\dot{\bm{r}}_{EB})
+        \end{align*}
+        \item Assume constant mass and express vectors in $\mathcal{B}$
+        \begin{align*}
+            \frac{1}{m}\ _\mathcal{B}\bm{F}=\ _\mathcal{B}\ddot{\bm{r}}_{EB}+\ _\mathcal{B}\bm{\omega}_\mathcal{EB}\times\ _\mathcal{B}\dot{\bm{r}}_{EB}
+        \end{align*}
+        \item The resultant force $\bm{F}$ is composed of aerodynamic forces and gravity
+        \begin{align*}
+            &\frac{1}{m}\ _\mathcal{B}\bm{F}_\mathrm{Aero}+\bm{C}_\mathcal{BE}
+            \begin{bmatrix}
+                0\\
+                0\\
+                1
+            \end{bmatrix}g=
+            \begin{bmatrix}
+                \Dot{u}\\
+                \Dot{v}\\
+                \Dot{w}
+            \end{bmatrix}+
+            \begin{bmatrix}
+                p\\
+                q\\
+                r
+            \end{bmatrix}\times
+            \begin{bmatrix}
+                u\\
+                v\\
+                w
+            \end{bmatrix}\\
+            \implies
+            &\frac{1}{m}\ _\mathcal{B}\bm{F}_\mathrm{Aero}+
+            \begin{bmatrix}
+                -\sin\theta\\
+                \sin\phi\cos\theta\\
+                \cos\phi\cos\theta
+            \end{bmatrix}g=
+            \begin{bmatrix}
+                qw-rv\\
+                ru-pw\\
+                pv-qu
+            \end{bmatrix}=
+            \begin{bmatrix}
+                \Dot{u}\\
+                \Dot{v}\\
+                \Dot{w}
+            \end{bmatrix}
+        \end{align*}
+    \end{enumerate}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{EQUATION OF MOMENTS}}
+    \begin{enumerate}
+        \item Conservation of angular momentum
+        \begin{align*}
+            \dot{\bm{N}}_S=\sfrac{d}{dt}\left(\bm{I}_S\bm{\Omega}_\mathcal{B}\right)=\bm{I}_S\bm{\Psi}_\mathcal{B}+\bm{\Omega}_\mathcal{B}\times\bm{I}_S\bm{\Omega}_\mathcal{B}=\bm{T}
+        \end{align*}
+        \item Modified notation
+        \begin{align*}
+            \dot{\bm{N}}_B=\sfrac{d}{dt}\left(\bm{I}_B\ \bm{\omega}_\mathcal{EB}\right)=\bm{I}_B\ \dot{\bm{\omega}}_\mathcal{EB}+\bm{\omega}_\mathcal{EB}\times\bm{I}_B\ \bm{\omega}_\mathcal{EB}=\bm{M}
+        \end{align*}
+        \item Express vectors in $\mathcal{B}$
+        \begin{align*}
+            \bm{I}_B\ _\mathcal{B}\dot{\bm{\omega}}_\mathcal{EB}+\ _\mathcal{B}\bm{\omega}_\mathcal{EB}\times\bm{I}_B\ _\mathcal{B}\bm{\omega}_\mathcal{EB}=\ _\mathcal{B}\bm{M}
+        \end{align*}
+        \item The resultant moment $M$ is composed of aerodynamic moments
+        \begin{center}
+            \resizebox{0.90\textwidth}{!}{$
+            \begin{aligned}
+                &\begin{bmatrix}
+                    I_{xx} & 0 & 0\\
+                    0 & I_{yy} & 0\\
+                    0 & 0 & I_{zz}
+                \end{bmatrix}
+                \begin{bmatrix}
+                    \dot{p}\\
+                    \dot{q}\\
+                    \dot{r}
+                \end{bmatrix}+
+                \begin{bmatrix}
+                    p\\
+                    q\\
+                    r
+                \end{bmatrix}\times
+                \begin{bmatrix}
+                    I_{xx} & 0 & 0\\
+                    0 & I_{yy} & 0\\
+                    0 & 0 & I_{zz}
+                \end{bmatrix}
+                \begin{bmatrix}
+                    p\\
+                    q\\
+                    r
+                \end{bmatrix}=\ _\mathcal{B}\bm{M}_\mathrm{Aero}\\
+                \implies&
+                \begin{bmatrix}
+                    I_{xx}\dot{p}+qr(I_{zz}-I_{yy})\\
+                    I_{yy}\dot{q}+pr(I_{xx}-I_{zz})\\
+                    I_{zz}\dot{r}
+                \end{bmatrix}=\ _\mathcal{B}\bm{M}_\mathrm{Aero}
+            \end{aligned}$}
+        \end{center}
+        using $I_{yy}=I_{zz}$ (assumption)
+    \end{enumerate}
+\end{whitebox}
+
+        
+\begin{whitebox}{\textbf{BODY DYNAMICS}}
+    \begin{itemize}
+        \item Equation of forces and moments in matrix form
+        \begin{align*}
+            \begin{bmatrix}
+                m\mathbb{I}_{3\times3} & \bm{0}\\
+                \bm{0} & \bm{I}_B
+            \end{bmatrix}
+            \begin{bmatrix}
+                _\mathcal{B}\ddot{\bm{r}}_{EB}\\
+                _\mathcal{B}\dot{\bm{\omega}}_\mathcal{EB}
+            \end{bmatrix}+
+            \begin{bmatrix}
+                _\mathcal{B}\bm{\omega}_\mathcal{EB}\times m\ _\mathcal{B}\dot{\bm{r}}_{EB}\\
+                _\mathcal{B}\bm{\omega}_\mathcal{EB}\times\bm{I}_B\ _\mathcal{B}\bm{\omega}_\mathcal{EB}
+            \end{bmatrix}=
+            \begin{bmatrix}
+                _\mathcal{B}\bm{F}\\
+                _\mathcal{B}\bm{M}
+            \end{bmatrix}
+        \end{align*}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{AERODYNAMIC FORCES}}
+    \begin{align*}
+        _\mathcal{B}\bm{F}_\mathrm{Aero}&=\ _\mathcal{B}\bm{F}_\mathrm{Thrust}=
+        \begin{bmatrix}
+            0\\
+            0\\
+            -b(\omega_{p_1}^2+\omega_{p_2}^2+\omega_{p_3}^2+\omega_{p_4}^2)
+        \end{bmatrix}
+    \end{align*}
+    \begin{itemize}
+        \item Thrust forces in the shaft direction
+        \begin{align*}
+            _\mathcal{B}\bm{F}_\mathrm{Thrust}=\sum_{i=1}^4
+            \begin{bmatrix}
+                0\\
+                0\\
+                -T_i
+            \end{bmatrix},\quad T_i=b_i\omega_{p,i}^2
+        \end{align*}
+        \item Additional forces (neglected during hover)
+        \begin{itemize}
+            \item Hub forces along the horizontal speed
+            \begin{align*}
+                _\mathcal{B}\bm{H}=\sum_{i=1}^4 H_i\frac{_\mathcal{B}\dot{\bm{r}}_{EB_h}}{||_\mathcal{B}\dot{\bm{r}}_{EB_h}||},\quad_\mathcal{B}\dot{\bm{r}}_{EB_h}=
+                \begin{bmatrix}
+                    u & v & 0
+                \end{bmatrix}^\top
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{AERODYNAMIC MOMENTS}}
+    \begin{center}
+        \resizebox{0.95\textwidth}{!}{$
+        \begin{aligned}
+            _\mathcal{B}\bm{M}_\mathrm{Aero}=\ _\mathcal{B}\bm{M}_\mathrm{Thrust}+\ _\mathcal{B}\bm{M}_\mathrm{Drag}=
+            \begin{bmatrix}
+                lb(\omega_{p_4}^2-\omega_{p_2}^2)\\
+                lb(\omega_{p_1}^2-\omega_{p_3}^2)\\
+                d(-\omega_{p_1}^2+\omega_{p_2}^2-\omega_{p_3}^2+\omega_{p_4}^2)
+            \end{bmatrix}
+        \end{aligned}$}
+    \end{center}
+    \begin{itemize}
+        \item Thrust induced moment from propeller rotations
+        \begin{align*}
+            _\mathcal{B}\bm{M}_\mathrm{Thrust}=
+            \begin{bmatrix}
+                l(T_4-T_2)\\
+                l(T_1-T_3)\\
+                0
+            \end{bmatrix}
+        \end{align*}
+        \item Drag torques (define required motor power)
+        \begin{align*}
+            _\mathcal{B}\bm{M}_\mathrm{Drag}=
+            \begin{bmatrix}
+                0\\
+                0\\
+                \sum_{i=1}^4Q_i(-1)^i
+            \end{bmatrix},\quad Q_i=d_i\omega_{p,i}^2
+        \end{align*}
+        \item Additional moments (neglected during hover)
+        \begin{itemize}
+            \item Inertial counter torques % TODO: check equation
+            \begin{align*}
+                _\mathcal{B}\bm{M}_{\mathrm{CT}_i}=\bm{I}_{\mathrm{Prop}_i}
+                \begin{bmatrix}
+                    0\\
+                    0\\
+                    \omega_{p,i}
+                \end{bmatrix}
+            \end{align*}
+            \item Propeller gyro effect % TODO: check equation
+            \begin{align*}
+                _\mathcal{B}\bm{M}_{\mathrm{Gyro}_i}=
+                \begin{bmatrix}
+                    \bm{I}_{\mathrm{Prop}_i}\omega_{p,i}
+                \end{bmatrix}\times\ \mathcal{B}\bm{\omega}_\mathcal{EB}
+            \end{align*}
+            \item Rolling moments % TODO: check equation
+            \begin{align*}
+                _\mathcal{B}\bm{R}=\sum_{i=1}^4R_i(-1)^{i-1}\frac{_\mathcal{B}\dot{\bm{r}}_{EB_h}}{||_\mathcal{B}\dot{\bm{r}}_{EB_h}||}
+            \end{align*}
+            \item Hub moments % TODO: check equation (and whats the p?)
+            \begin{align*}
+                _\mathcal{B}\bm{M}_\mathrm{Hub}=\sum_{i=1}^4H_i\ _\mathcal{B}\bm{p}_{p,i}\times\frac{_\mathcal{B}\dot{\bm{r}}_{EB_h}}{||_\mathcal{B}\dot{\bm{r}}_{EB_h}||}
+            \end{align*}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{HOVER MODEL APPROXIMATION}}
+    \begin{itemize}
+        \item Equations of motion in body frame
+        \begin{itemize}
+            \item Translational dynamics
+            \mathbox{
+                &m\dot{u}=m(rv-qw)-mg\sin\theta\\
+                &m\dot{v}=m(pw-ru)+mg\sin\phi\cos\theta\\
+                &m\dot{w}=m(qu-pv)+mg\cos\phi\cos\theta-\hdots\\
+                &\quad\quad\hdots-b(\omega_{p_1}^2+\omega_{p_2}^2+\omega_{p_3}^2+\omega_{p_4}^2)
+            }
+            \item Rotational dynamics
+            \mathbox{
+            &I_{xx}\dot{p}=qr(I_{yy}-I_{zz})+lb(\omega_{p_4}^2-\omega_{p_2}^2)\\
+            &I_{yy}\dot{q}=pr(I_{zz}-I_{xx})+lb(\omega_{p_1}^2-\omega_{p_3}^2)\\
+            &I_{zz}\dot{r}=d(-\omega_{p_1}^2+\omega_{p_2}^2-\omega_{p_3}^2+\omega_{p_4}^2)
+            }
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{PROPELLER AERODYNAMICS}}
+    \begin{itemize}
+        \item Propeller in hover
+        \begin{itemize}
+            \item Thrust force $T$ (perpendicular to propeller plane)
+            \begin{align*}
+                T=\frac{1}{2}\rho A_pC_T(\omega_pR_p)^2
+            \end{align*}
+            \item Drag torque $Q$ (torque around propeller plane; opposite to prop spin direction)
+            \begin{align*}
+                Q=\frac{1}{2}\rho A_pC_Q(\omega_pR_p)^2R_p
+            \end{align*}
+            \item $C_T,C_Q$ depend on blade pitch angle (propeller geometry), Reynolds number, etc.
+        \end{itemize}
+        \item Propeller in forward flight
+        \begin{itemize}
+            \item Hub force $H$ (perpendicular to $T$; opposes horizontal flight direction)
+            \begin{align*}
+                H=\frac{1}{2}\rho A_pC_H(\omega_pR_p)^2
+            \end{align*}
+            \item Rolling moment $R$ (around flight direction)
+            \begin{align*}
+                R=\frac{1}{2}\rho A_pC_R(\omega_pR_p)^2R_p
+            \end{align*}
+            \item $C_H,C_R$ depend on the advance ratio $\mu=\frac{||_\mathcal{B}\dot{\bm{r}}_{EB_h}||}{\omega_pR_p}$
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MOMENTUM THEORY}}
+    \begin{itemize}
+        \item Idea: by actio-reactio, the power put into the fluid to change its momentum downwards is the thrust force at the propeller
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{MOMENTUM THEORY ASSUMPTIONS}}
+    \begin{itemize}
+        \item Infinitely thin propeller disc area $A_p$
+        \item Uniform thrust and velocity distribution over disc area (allows 1D flow analysis)
+        \item Quasi-static airflow (constant flow properties)
+        \item No viscous effects (no profile drag)
+        \item Incompressible flow
+        \item Stationary control volume $A$
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{FLUID DYNAMICS PRINCIPLES}}
+    \begin{itemize}
+        \item \textbf{Conservation of fluid mass}: mass flow in and out of control volume is equal in a quasi-static flow
+        \begin{align*}
+            \int_A\rho(\bm{u}\cdot{\bm{n}})\ dA=0
+        \end{align*}
+        \begin{itemize}
+            \item Fluid density $\rho$
+            \item Flow speed $\bm{u}$ at surface element $dA$
+            \item Surface element normal unit vector $\bm{n}$
+        \end{itemize}
+        \item \textbf{Conservation of fluid momentum}: net force on fluid is the change in momentum of fluid
+        \begin{align*}
+            \int_A\rho\bm{u}(\bm{u}\cdot\bm{n})\ dA=\cancelto{0}{-\int_Ap\bm{n}\ dA}+\bm{F}
+        \end{align*}
+        assuming unconstrained flow (net pressure force is $0$)
+        \begin{itemize}
+            \item Pressure $p$ at surface element $dA$
+            \item Net force $\bm{F}$ on fluid
+        \end{itemize}
+        \item \textbf{Conservation of energy}: work done on fluid results in gain of kinetic energy
+        \begin{align*}
+            \frac{1}{2}\int_A\rho u^2(\bm{u}\cdot\bm{n})\ dA=\frac{dE}{dt}=P
+        \end{align*}
+        \begin{itemize}
+            \item Energy $E$
+            \item Power $P$
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+
+
+\begin{whitebox}{\textbf{MOMENTUM THEORY RESULTS}}
+    \begin{minipage}[c]{0.36\linewidth}
+        \begin{center}
+            \includegraphics[width=0.9\textwidth]{media/Momentum_Theory.drawio.pdf}
+        \end{center}
+    \end{minipage}%
+    \begin{minipage}[c]{0.6\linewidth}
+        \begin{itemize}
+            \item Speed constant across propeller
+            \begin{align*}
+                u_1=u_2
+            \end{align*}
+            \item Pressure change across propeller
+            \item Far wake slipstream velocity is twice the induced velocity
+            \begin{align*}
+                u_3=2u_1
+            \end{align*}
+            \item Thrust force $T=2\rho A_p(V+u_1)u_1$
+            \item In hover ($V=0$)
+            \begin{itemize}
+                \item Thrust force $T=2\rho A_pu_1^2$
+                \item Slipstream tube
+                \begin{align*}
+                    A_0=\infty\implies A_3=A_p/2
+                \end{align*}
+            \end{itemize}
+        \end{itemize}
+    \end{minipage}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{HOVER POWER CONSUMPTION}}
+    \begin{itemize}
+        \item Ideal power to produce thrust
+        \begin{align*}
+            P=T(V+u_1)
+        \end{align*}
+        \begin{itemize}
+            \item In hover
+            \begin{align*}
+                P=\frac{T^{\frac{3}{2}}}{\sqrt{2\rho A_p}},\quad T=mg
+            \end{align*}
+            \begin{itemize}
+                \item Reducing power by decreasing disc loading $\frac{T}{A_p}$ i.e. increasing $A_p$
+                \begin{itemize}
+                    \item Mechanical constraint: tip Mach number
+                    \item More profile/structural drag
+                    \item Longer tail, etc.
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{PROPELLER EFFICIENCY}}
+    \begin{itemize}
+        \item Figure of merit
+        \begin{align*}
+            FM=\frac{\text{Ideal power required to hover}}{\text{Actual power required to hover}}<1
+        \end{align*}
+        \begin{itemize}
+            \item Ideal power given by momentum theory
+            \item Actual power includes profile drag, blade-tip vortex, etc.
+            \item $FM$ used to compare different propellers with the same disc loading
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{BLADE ELEMENT MOMENTUM THEORY (BEMT)}}
+    \begin{itemize}
+        \item Divide propeller into blade elements $dr$
+        \item Calculate forces for each (2D) airfoil element and sum them up
+        \begin{itemize}
+            \item Angle of attack and Reynolds number from relative airflow $V$ consisting of tangential velocity $\omega_pr$ and axial velocity $V_p+u_\mathrm{ind}$
+            \begin{itemize}
+                \item Main component $V_p$ of axial velocity calcilated using Momentum Theory
+                \item $u_\mathrm{ind}$ is the induced velocity
+            \end{itemize}
+            \item Lift and drag polar provide lift and drag coefficient based on angle of attack
+            
+        \end{itemize}
+    \end{itemize}
+\end{whitebox}
+
+\begin{whitebox}{\textbf{DC MOTOR MODEL}}
+    \begin{itemize}
+        \item Mechanical system
+        \begin{itemize}
+            \item Change in rotational speed depends on generated motor torque $T_m$ and drag torque $Q$
+            \begin{align*}
+                I_m\frac{\omega_m}{dt}=T_m(t)-Q(t)
+            \end{align*}
+            \item Electromagnetic field in coil generates $T_m(t)$
+            \begin{align*}
+                T_m(t)=k_Ti(t)
+            \end{align*}
+            with  torque constant $k_T$ and current $i(t)$
+        \end{itemize}
+        \item Electrical system
+        \begin{itemize}
+            \item Voltage balance
+            \begin{align*}
+                L\frac{d}{dt}i(t)=U(t)-Ri(t)-U_\mathrm{Ind}(t)
+            \end{align*}
+            with coil inductance $L$, resistance $R$, input voltage $U(t)$ and induced voltage $U_\mathrm{Ind}$ (back EMF from rotating coil inducing opposing current)
+        \end{itemize}
+        \item Electrical dynamics usually much faster than mechanical, therefore approximate the full (second order) system as a as first order system
+    \end{itemize}
+\end{whitebox}
